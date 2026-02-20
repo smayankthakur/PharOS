@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light dark;
+  --primary: #0f766e;
+  --secondary: #1e293b;
+}
+
+body {
+  margin: 0;
+}

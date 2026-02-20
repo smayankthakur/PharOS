@@ -1,0 +1,34 @@
+{
+  "name": "pharos",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev --workspace @pharos/api",
+    "dev:web": "npm run dev --workspace @pharos/web",
+    "dev:worker": "npm run dev --workspace @pharos/worker",
+    "build": "npm run build --workspaces",
+    "lint": "npm run lint --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
+    "test": "npm run test --workspace @pharos/api",
+    "format": "prettier --write .",
+    "migrate": "ts-node packages/db/migrate.ts",
+    "seed": "ts-node packages/db/seed.ts",
+    "db:reset": "ts-node packages/db/reset.ts && ts-node packages/db/migrate.ts && ts-node packages/db/seed.ts"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.25.0",
+    "@typescript-eslint/parser": "^8.25.0",
+    "eslint": "^9.21.0",
+    "eslint-config-next": "^15.2.0",
+    "prettier": "^3.5.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "rxjs": "^7.8.2"
+  }
+}
