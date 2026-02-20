@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import type { QueryResultRow } from 'pg';
 import { DatabaseService } from './database.service';
 
@@ -14,7 +14,18 @@ type TenantScopedTable =
   | 'inventory_balances'
   | 'inventory_movements'
   | 'dealers'
-  | 'dealer_sales';
+  | 'dealer_sales'
+  | 'competitors'
+  | 'competitor_items'
+  | 'competitor_snapshots'
+  | 'rule_definitions'
+  | 'rules'
+  | 'rule_runs'
+  | 'alerts'
+  | 'alert_evidence'
+  | 'tasks'
+  | 'task_history'
+  | 'task_comments';
 
 type Filter = Record<string, unknown>;
 
@@ -25,7 +36,10 @@ type SelectManyOptions = {
 
 @Injectable()
 export class TenantDb {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    @Inject(DatabaseService)
+    private readonly databaseService: DatabaseService,
+  ) {}
 
   async selectOne<T extends QueryResultRow>(
     tenantId: string,

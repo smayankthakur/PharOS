@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
+  Inject,
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -17,8 +18,11 @@ type RoleRow = {
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(
+    @Inject(Reflector)
     private readonly reflector: Reflector,
+    @Inject(DatabaseService)
     private readonly databaseService: DatabaseService,
+    @Inject(AuditService)
     private readonly auditService: AuditService,
   ) {}
 

@@ -4,52 +4,91 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
+  Inject,
+  Injectable,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { AppLoggerService } from '../logger/app-logger.service';
 import { RequestContextService } from '../logger/request-context.service';
 
 @Catch()
+@Injectable()
 export class GlobalExceptionFilter implements ExceptionFilter {
   constructor(
-    private readonly logger: AppLoggerService,
-    private readonly requestContextService: RequestContextService,
+    @Inject(AppLoggerService)
+    private readonly logger?: AppLoggerService,
+    @Inject(RequestContextService)
+    private readonly requestContextService?: RequestContextService,
   ) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
+    try {
+      const ctx = host.switchToHttp();
+      const response = ctx.getResponse<Response>();
+      const request = ctx.getRequest<Request>();
 
-    const status =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+      const status =
+        exception instanceof HttpException
+          ? exception.getStatus()
+          : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    const message =
-      exception instanceof HttpException
-        ? this.getHttpMessage(exception)
-        : 'Internal server error';
+      const message =
+        exception instanceof HttpException
+          ? this.getHttpMessage(exception)
+          : 'Internal server error';
 
-    const code = this.resolveCode(status);
-    const requestId = request.requestId ?? this.requestContextService.get()?.requestId ?? null;
+      const code = this.resolveCode(status);
+      let requestId: string | null = request?.requestId ?? null;
+      if (!requestId && this.requestContextService) {
+        const maybeGetter = (this.requestContextService as { get?: () => { requestId?: string } | null })
+          .get;
+        if (typeof maybeGetter === 'function') {
+          const context = maybeGetter.call(this.requestContextService);
+          requestId = context?.requestId ?? null;
+        }
+      }
 
-    this.logger.error('request.failed', {
-      status,
-      path: request.url,
-      method: request.method,
-      code,
-      message,
-    });
+      if (this.logger && typeof this.logger.error === 'function') {
+        const errorMeta =
+          exception instanceof Error
+            ? {
+                error_name: exception.name,
+                error_message: exception.message,
+                error_stack: exception.stack ?? null,
+              }
+            : {
+                error_name: 'unknown',
+                error_message: String(exception),
+                error_stack: null,
+              };
 
-    response.status(status).json({
-      error: {
-        code,
-        message,
-      },
-      request_id: requestId,
-      timestamp: new Date().toISOString(),
-    });
+        this.logger.error('request.failed', {
+          status,
+          path: request?.url ?? '',
+          method: request?.method ?? '',
+          code,
+          message,
+          ...errorMeta,
+        });
+      } else {
+        console.error('request.failed', { status, code, message });
+        console.error('request.failed.exception', exception);
+      }
+
+      if (response && typeof response.status === 'function') {
+        response.status(status).json({
+          error: {
+            code,
+            message,
+          },
+          request_id: requestId,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    } catch (error) {
+      // Never let the exception filter throw recursively.
+      console.error('global_exception_filter_failed', error);
+    }
   }
 
   private getHttpMessage(exception: HttpException): string {

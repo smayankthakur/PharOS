@@ -3,7 +3,12 @@ import type { NextRequest } from 'next/server';
 import { extractTenantSlugFromHost } from './src/lib/tenant';
 
 const isProtectedPath = (pathname: string): boolean => {
-  return pathname.startsWith('/dashboard') || pathname.startsWith('/settings');
+  return (
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/settings') ||
+    pathname.startsWith('/alerts') ||
+    pathname.startsWith('/tasks')
+  );
 };
 
 export function middleware(request: NextRequest): NextResponse {

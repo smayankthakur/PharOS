@@ -55,12 +55,48 @@ type DealerSaleSeedInput = {
   refNo: string;
 };
 
+type CompetitorSeedInput = {
+  name: string;
+  website: string;
+};
+
+type CompetitorItemSeedInput = {
+  skuCode: string;
+  productUrl: string;
+  externalSku?: string;
+};
+
+type CompetitorSnapshotSeedInput = {
+  skuCode: string;
+  price: number;
+  currency: string;
+  capturedAt: string;
+  method: string;
+  evidence: Record<string, unknown>;
+};
+
+type RuleDefinitionSeedInput = {
+  code: 'R1' | 'R2' | 'R3' | 'R4';
+  name: string;
+  description: string;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  enabled: boolean;
+  config: Record<string, unknown>;
+};
+
+type RulesEngineRuleSeedInput = {
+  ruleCode: 'R1' | 'R2' | 'R3' | 'R4';
+  name: string;
+  enabled: boolean;
+  config: Record<string, unknown>;
+};
+
 const SHAKTI_SKUS: SkuSeedInput[] = [
   {
     code: 'SKU-342',
     name: 'LED Bulb 9W',
     description: 'Energy efficient LED bulb 9W warm white',
-    pricing: { cost: 62, map: 89, mrp: 99, activePrice: 92, currencyCode: 'INR' },
+    pricing: { cost: 62, map: 95, mrp: 119, activePrice: 98, currencyCode: 'INR' },
   },
   {
     code: 'SKU-118',
@@ -132,6 +168,112 @@ const SHAKTI_DEALER_SALES: DealerSaleSeedInput[] = [
     saleDate: '2026-02-12',
     source: 'manual',
     refNo: 'SALE-D12-D002-SKU118',
+  },
+];
+
+const SHAKTI_COMPETITOR: CompetitorSeedInput = {
+  name: 'CompetitorA',
+  website: 'https://example.com',
+};
+
+const SHAKTI_COMPETITOR_ITEMS: CompetitorItemSeedInput[] = [
+  {
+    skuCode: 'SKU-342',
+    productUrl: 'https://example.com/products/sku-342',
+    externalSku: 'CMP-SKU-342',
+  },
+  {
+    skuCode: 'SKU-118',
+    productUrl: 'https://example.com/products/sku-118',
+    externalSku: 'CMP-SKU-118',
+  },
+  {
+    skuCode: 'SKU-777',
+    productUrl: 'https://example.com/products/sku-777',
+    externalSku: 'CMP-SKU-777',
+  },
+];
+
+const SHAKTI_COMPETITOR_SNAPSHOTS: CompetitorSnapshotSeedInput[] = [
+  {
+    skuCode: 'SKU-342',
+    price: 92,
+    currency: 'INR',
+    capturedAt: '2026-02-05T10:00:00.000Z',
+    method: 'seed',
+    evidence: {
+      url: 'https://example.com/products/sku-342',
+      note: 'seed snapshot',
+    },
+  },
+  {
+    skuCode: 'SKU-342',
+    price: 97,
+    currency: 'INR',
+    capturedAt: '2026-02-13T10:00:00.000Z',
+    method: 'seed',
+    evidence: {
+      url: 'https://example.com/products/sku-342',
+      note: 'seed snapshot',
+    },
+  },
+  {
+    skuCode: 'SKU-118',
+    price: 60,
+    currency: 'INR',
+    capturedAt: '2026-02-09T10:00:00.000Z',
+    method: 'seed',
+    evidence: {
+      url: 'https://example.com/products/sku-118',
+      note: 'seed snapshot',
+    },
+  },
+];
+
+const V1_RULE_DEFINITIONS: RuleDefinitionSeedInput[] = [
+  {
+    code: 'R1',
+    name: 'Dealer below MRP',
+    description: 'Trigger when dealer sale price is below MRP.',
+    severity: 'high',
+    enabled: true,
+    config: { comparator: '<', reference: 'mrp' },
+  },
+  {
+    code: 'R2',
+    name: 'Dealer below MAP',
+    description: 'Trigger when dealer sale price is below MAP.',
+    severity: 'critical',
+    enabled: true,
+    config: { comparator: '<', reference: 'map' },
+  },
+  {
+    code: 'R3',
+    name: 'Competitor under MAP',
+    description: 'Trigger when competitor price is below MAP.',
+    severity: 'high',
+    enabled: true,
+    config: { comparator: '<', reference: 'map', subject: 'competitor' },
+  },
+  {
+    code: 'R4',
+    name: 'Dead stock over threshold',
+    description: 'Trigger when stock age is at least 90 days and on_hand exceeds 10.',
+    severity: 'medium',
+    enabled: true,
+    config: { min_age_days: 90, min_on_hand: 10 },
+  },
+];
+
+const V1_ENGINE_RULES: RulesEngineRuleSeedInput[] = [
+  { ruleCode: 'R1', name: 'Dealer below MRP', enabled: true, config: {} },
+  { ruleCode: 'R2', name: 'Dealer below MAP', enabled: true, config: {} },
+  { ruleCode: 'R3', name: 'Competitor below MAP', enabled: true, config: { r3_est_units: 10 } },
+  {
+    ruleCode: 'R4',
+    name: 'Dead stock over threshold',
+    enabled: true,
+    config: { dead_days: 90, dead_units_threshold: 10, dead_value_high_threshold: 50000 },
   },
 ];
 
@@ -383,6 +525,199 @@ const seedDealersAndSales = async (
         sale.source,
         sale.refNo,
       ],
+    );
+  }
+};
+
+const seedCompetitorsAndSnapshots = async (
+  client: PoolClient,
+  tenantId: string,
+  competitor: CompetitorSeedInput,
+  items: CompetitorItemSeedInput[],
+  snapshots: CompetitorSnapshotSeedInput[],
+): Promise<void> => {
+  await client.query(
+    `
+    INSERT INTO competitors (
+      tenant_id,
+      name,
+      website,
+      status
+    )
+    VALUES ($1, $2, $3, 'active')
+    ON CONFLICT (tenant_id, name) DO UPDATE SET
+      website = EXCLUDED.website,
+      status = EXCLUDED.status,
+      updated_at = now()
+    `,
+    [tenantId, competitor.name, competitor.website],
+  );
+
+  const competitorResult = await client.query<{ id: string }>(
+    'SELECT id FROM competitors WHERE tenant_id = $1 AND name = $2 LIMIT 1',
+    [tenantId, competitor.name],
+  );
+  const competitorId = competitorResult.rows[0]?.id;
+  if (!competitorId) {
+    throw new Error('Failed to resolve competitor id for seed');
+  }
+
+  for (const item of items) {
+    const skuResult = await client.query<{ id: string }>(
+      'SELECT id FROM skus WHERE tenant_id = $1 AND code = $2 LIMIT 1',
+      [tenantId, item.skuCode],
+    );
+    const skuId = skuResult.rows[0]?.id;
+    if (!skuId) {
+      throw new Error(`Failed to resolve sku id for competitor item seed: ${item.skuCode}`);
+    }
+
+    await client.query(
+      `
+      INSERT INTO competitor_items (
+        tenant_id,
+        competitor_id,
+        sku_id,
+        product_url,
+        external_sku,
+        selector_json,
+        status
+      )
+      VALUES ($1, $2, $3, $4, $5, '{}'::jsonb, 'active')
+      ON CONFLICT (tenant_id, competitor_id, sku_id) DO UPDATE SET
+        product_url = EXCLUDED.product_url,
+        external_sku = EXCLUDED.external_sku,
+        status = EXCLUDED.status,
+        updated_at = now()
+      `,
+      [tenantId, competitorId, skuId, item.productUrl, item.externalSku ?? null],
+    );
+  }
+
+  await client.query(
+    `
+    DELETE FROM competitor_snapshots
+    WHERE tenant_id = $1
+      AND method = 'seed'
+    `,
+    [tenantId],
+  );
+
+  for (const snapshot of snapshots) {
+    const skuResult = await client.query<{ id: string }>(
+      'SELECT id FROM skus WHERE tenant_id = $1 AND code = $2 LIMIT 1',
+      [tenantId, snapshot.skuCode],
+    );
+    const skuId = skuResult.rows[0]?.id;
+    if (!skuId) {
+      throw new Error(`Failed to resolve sku id for competitor snapshot seed: ${snapshot.skuCode}`);
+    }
+
+    const itemResult = await client.query<{ id: string }>(
+      `
+      SELECT id
+      FROM competitor_items
+      WHERE tenant_id = $1
+        AND competitor_id = $2
+        AND sku_id = $3
+      LIMIT 1
+      `,
+      [tenantId, competitorId, skuId],
+    );
+    const competitorItemId = itemResult.rows[0]?.id;
+    if (!competitorItemId) {
+      throw new Error(`Failed to resolve competitor item id for snapshot seed: ${snapshot.skuCode}`);
+    }
+
+    await client.query(
+      `
+      INSERT INTO competitor_snapshots (
+        tenant_id,
+        competitor_item_id,
+        price,
+        currency,
+        captured_at,
+        method,
+        evidence_json,
+        raw_json
+      )
+      VALUES ($1, $2, $3, $4, $5::timestamptz, $6, $7::jsonb, '{}'::jsonb)
+      `,
+      [
+        tenantId,
+        competitorItemId,
+        snapshot.price,
+        snapshot.currency,
+        snapshot.capturedAt,
+        snapshot.method,
+        JSON.stringify(snapshot.evidence),
+      ],
+    );
+  }
+};
+
+const seedRuleDefinitions = async (
+  client: PoolClient,
+  tenantId: string,
+  rules: RuleDefinitionSeedInput[],
+): Promise<void> => {
+  for (const rule of rules) {
+    await client.query(
+      `
+      INSERT INTO rule_definitions (
+        tenant_id,
+        code,
+        name,
+        description,
+        severity,
+        enabled,
+        config_json
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)
+      ON CONFLICT (tenant_id, code) DO UPDATE SET
+        name = EXCLUDED.name,
+        description = EXCLUDED.description,
+        severity = EXCLUDED.severity,
+        enabled = EXCLUDED.enabled,
+        config_json = EXCLUDED.config_json,
+        updated_at = now()
+      `,
+      [
+        tenantId,
+        rule.code,
+        rule.name,
+        rule.description,
+        rule.severity,
+        rule.enabled,
+        JSON.stringify(rule.config),
+      ],
+    );
+  }
+};
+
+const seedRulesEngineRules = async (
+  client: PoolClient,
+  tenantId: string,
+  rules: RulesEngineRuleSeedInput[],
+): Promise<void> => {
+  for (const rule of rules) {
+    await client.query(
+      `
+      INSERT INTO rules (
+        tenant_id,
+        rule_code,
+        name,
+        enabled,
+        config_json
+      )
+      VALUES ($1, $2, $3, $4, $5::jsonb)
+      ON CONFLICT (tenant_id, rule_code) DO UPDATE SET
+        name = EXCLUDED.name,
+        enabled = EXCLUDED.enabled,
+        config_json = EXCLUDED.config_json,
+        updated_at = now()
+      `,
+      [tenantId, rule.ruleCode, rule.name, rule.enabled, JSON.stringify(rule.config)],
     );
   }
 };
@@ -655,10 +990,19 @@ const seed = async (): Promise<void> => {
     });
 
     await seedSkuSet(client, shaktiTenantId, SHAKTI_SKUS);
+    await seedCompetitorsAndSnapshots(
+      client,
+      shaktiTenantId,
+      SHAKTI_COMPETITOR,
+      SHAKTI_COMPETITOR_ITEMS,
+      SHAKTI_COMPETITOR_SNAPSHOTS,
+    );
+    await seedRuleDefinitions(client, shaktiTenantId, V1_RULE_DEFINITIONS);
+    await seedRulesEngineRules(client, shaktiTenantId, V1_ENGINE_RULES);
     await seedWarehouseInventory(client, shaktiTenantId, SHAKTI_WAREHOUSE);
     await seedDealersAndSales(client, shaktiTenantId, SHAKTI_DEALERS, SHAKTI_DEALER_SALES);
 
-    await seedTenant(client, passwordHash, {
+    const vikramTenantId = await seedTenant(client, passwordHash, {
       name: 'Vikram Pharma',
       slug: 'vikram',
       ownerEmail: 'owner@vikram.test',
@@ -668,6 +1012,8 @@ const seed = async (): Promise<void> => {
       primaryColor: '#0C4A6E',
       secondaryColor: '#334155',
     });
+    await seedRuleDefinitions(client, vikramTenantId, V1_RULE_DEFINITIONS);
+    await seedRulesEngineRules(client, vikramTenantId, V1_ENGINE_RULES);
 
     await client.query('COMMIT');
     console.log('Seed complete');

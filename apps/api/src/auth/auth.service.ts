@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -29,8 +30,11 @@ export class AuthService {
   private readonly jwtSecret: string;
 
   constructor(
+    @Inject(DatabaseService)
     private readonly databaseService: DatabaseService,
+    @Inject(TenantDb)
     private readonly tenantDb: TenantDb,
+    @Inject(AuditService)
     private readonly auditService: AuditService,
   ) {
     const config = loadConfig();

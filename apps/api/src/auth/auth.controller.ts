@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   Post,
   Req,
   UnauthorizedException,
@@ -17,7 +18,10 @@ type LoginBody = {
 
 @Controller()
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    @Inject(AuthService)
+    private readonly authService: AuthService,
+  ) {}
 
   @Post('auth/login')
   async login(@Body() body: LoginBody): Promise<{ accessToken: string }> {

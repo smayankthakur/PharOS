@@ -12,7 +12,8 @@
     "@pharos/config": "0.1.0",
     "bullmq": "^5.43.3",
     "dotenv": "^16.4.7",
-    "ioredis": "^5.4.2"
+    "ioredis": "^5.4.2",
+    "pg": "^8.13.1"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",

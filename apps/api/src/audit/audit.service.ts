@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { TenantDb } from '../database/tenant-db.service';
 import { AppLoggerService } from '../logger/app-logger.service';
 import { EVENT_SET } from './event-registry';
@@ -37,7 +37,9 @@ export type AuditLogResponse = {
 @Injectable()
 export class AuditService {
   constructor(
+    @Inject(TenantDb)
     private readonly tenantDb: TenantDb,
+    @Inject(AppLoggerService)
     private readonly logger: AppLoggerService,
   ) {}
 

@@ -1,0 +1,85 @@
+
+> @pharos/web@0.1.0 dev
+> next dev --hostname 0.0.0.0 --port 3000
+
+   ▲ Next.js 15.5.12
+   - Local:        http://localhost:3000
+   - Network:      http://0.0.0.0:3000
+
+ ✓ Starting...
+ ⚠ Found lockfile missing swc dependencies, patching...
+npm error code ENOWORKSPACES
+npm error This command does not support workspaces.
+npm error A complete log of this run can be found in: C:\Users\hp\AppData\Local\npm-cache\_logs\2026-02-20T18_30_58_640Z-debug-0.log
+ ⨯ Failed to patch lockfile, please try uninstalling and reinstalling next in this workspace
+[Error: Failed to get registry from "pnpm".] {
+  [cause]: [Error: Command failed: pnpm config get registry 
+  npm error code ENOWORKSPACES
+  npm error This command does not support workspaces.
+  npm error A complete log of this run can be found in: C:\Users\hp\AppData\Local\npm-cache\_logs\2026-02-20T18_30_58_640Z-debug-0.log
+  ] {
+    status: 1,
+    signal: null,
+    output: [
+      null,
+      <Buffer >,
+      <Buffer 6e 70 6d 20 65 72 72 6f 72 20 63 6f 64 65 20 45 4e 4f 57 4f 52 4b 53 50 41 43 45 53 0a 6e 70 6d 20 65 72 72 6f 72 20 54 68 69 73 20 63 6f 6d 6d 61 6e ... 164 more bytes>
+    ],
+    pid: 24400,
+    stdout: <Buffer >,
+    stderr: <Buffer 6e 70 6d 20 65 72 72 6f 72 20 63 6f 64 65 20 45 4e 4f 57 4f 52 4b 53 50 41 43 45 53 0a 6e 70 6d 20 65 72 72 6f 72 20 54 68 69 73 20 63 6f 6d 6d 61 6e ... 164 more bytes>
+  }
+}
+ ✓ Ready in 28.5s
+ ○ Compiling / ...
+ ✓ Compiled / in 11.9s (557 modules)
+ GET / 200 in 14864ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET / 200 in 481ms
+ GET / 200 in 156ms
+ GET / 200 in 555ms
+ GET / 200 in 715ms
+ ✓ Compiled in 1449ms (234 modules)
+ ✓ Compiled in 537ms (234 modules)
+ GET / 200 in 302ms
+ GET / 200 in 115ms
+ ✓ Compiled in 1623ms (557 modules)
+ GET / 200 in 1714ms
+ GET / 200 in 81ms
+ ✓ Compiled in 1037ms (543 modules)
+ GET / 200 in 781ms
+ GET / 200 in 86ms
+ ✓ Compiled in 1397ms (557 modules)
+ GET / 200 in 1270ms
+ GET / 200 in 78ms
+ ✓ Compiled in 972ms (543 modules)
+ GET / 200 in 689ms
+ GET / 200 in 89ms
+ ✓ Compiled in 266ms (234 modules)
+ GET / 200 in 140ms
+ GET / 200 in 80ms
+ ✓ Compiled in 773ms (234 modules)
+ GET / 200 in 152ms
+ ✓ Compiled in 1475ms (543 modules)
+ GET / 200 in 1712ms
+ GET / 200 in 98ms
+ ✓ Compiled in 1628ms (543 modules)
+ GET / 200 in 1759ms
+ GET / 200 in 104ms
+ ✓ Compiled in 1591ms (234 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open 'c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'c:\\Users\\hp\\OneDrive - Mayank Thakur\\Desktop\\PharOS\\PharOS main\\pharos\\apps\\web\\.next\\routes-manifest.json',
+  page: '/'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 5s (903 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open 'c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'c:\\Users\\hp\\OneDrive - Mayank Thakur\\Desktop\\PharOS\\PharOS main\\pharos\\apps\\web\\.next\\routes-manifest.json'
+}
+<w> [webpack.cache.PackFileCacheStrategy] Restoring pack failed from c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\.next\cache\webpack\client-development-fallback.pack.gz: Error: incorrect header check

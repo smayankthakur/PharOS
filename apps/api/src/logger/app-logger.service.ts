@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { RequestContextService } from './request-context.service';
 
 type LogPayload = {
@@ -12,7 +12,10 @@ type LogPayload = {
 
 @Injectable()
 export class AppLoggerService {
-  constructor(private readonly requestContextService: RequestContextService) {}
+  constructor(
+    @Inject(RequestContextService)
+    private readonly requestContextService?: RequestContextService,
+  ) {}
 
   info(message: string, meta?: Record<string, unknown>): void {
     this.write('info', message, meta);
@@ -31,7 +34,7 @@ export class AppLoggerService {
     message: string,
     meta?: Record<string, unknown>,
   ): void {
-    const context = this.requestContextService.get();
+    const context = this.requestContextService?.get() ?? null;
 
     const payload: LogPayload = {
       level,
