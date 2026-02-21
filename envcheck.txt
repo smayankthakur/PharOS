@@ -1,0 +1,4 @@
+DB=postgresql://pharos:pharos@localhost:5432/pharos 
+REDIS=redis://localhost:6379 
+JWT=change_me 
+postgresql://pharos:pharos@localhost:5432/pharos redis://localhost:6379 change_me

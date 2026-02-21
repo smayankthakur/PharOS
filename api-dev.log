@@ -1,0 +1,93 @@
+START 21-02-2026 13:44:27.88 
+DB=postgresql://pharos:pharos@localhost:5432/pharos 
+REDIS=redis://localhost:6379 
+JWT=change_me 
+
+> @pharos/api@0.1.0 dev
+> ts-node-dev --respawn --transpile-only src/main.ts
+
+[INFO] 13:44:38 ts-node-dev ver. 2.0.0 (using ts-node ver. 10.9.2, typescript ver. 5.9.3)
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:22 pm [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:22 pm [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mCoreModule dependencies initialized[39m[38;5;3m +483ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:22 pm [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +40ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:22 pm [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDashboardModule dependencies initialized[39m[38;5;3m +6ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:22 pm [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mExplainabilityModule dependencies initialized[39m[38;5;3m +5ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:22 pm [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTenantsModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:22 pm [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mSkuModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:22 pm [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWarehouseModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:22 pm [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mInventoryModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:22 pm [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mCompetitorModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:22 pm [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRulesEngineModule dependencies initialized[39m[38;5;3m +11ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:22 pm [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuleDefinitionsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:22 pm [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTasksModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:22 pm [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDealerModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:22 pm [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDealerSalesModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:22 pm [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +13ms[39m
+{"level":"info","message":"api.bootstrap","request_id":null,"tenant_id":null,"timestamp":"2026-02-21T08:15:22.982Z","meta":{"allowedOrigins":["http://pharos.local:3000","http://*.pharos.local:3000"]}}
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHealthController {/health}:[39m[38;5;3m +128ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/health, GET} route[39m[38;5;3m +13ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mProofController {/}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/admin/ping, GET} route[39m[38;5;3m +12ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/viewer/ping, GET} route[39m[38;5;3m +10ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuditController {/audit}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/audit/current, GET} route[39m[38;5;3m +7ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/auth/login, POST} route[39m[38;5;3m +15ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mTenantsController {/tenants}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/tenants/current, GET} route[39m[38;5;3m +12ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/tenants/by-slug/:slug, GET} route[39m[38;5;3m +14ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/tenants/current/settings, GET} route[39m[38;5;3m +8ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/tenants/current/settings, PATCH} route[39m[38;5;3m +26ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mSkuController {/skus}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/skus, POST} route[39m[38;5;3m +34ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/skus, GET} route[39m[38;5;3m +56ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/skus/:id, GET} route[39m[38;5;3m +43ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/skus/:id/pricing, PATCH} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mWarehouseController {/warehouses}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/warehouses, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/warehouses, GET} route[39m[38;5;3m +12ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mInventoryController {/inventory}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/inventory/balances, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/inventory/movements, POST} route[39m[38;5;3m +49ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mCompetitorController {/}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/competitors, POST} route[39m[38;5;3m +14ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/competitors, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/competitor-items, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/competitor-items, GET} route[39m[38;5;3m +11ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/competitor-items/:id, PATCH} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/competitor-snapshots, POST} route[39m[38;5;3m +11ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/competitor-snapshots, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mCompetitorCaptureController {/competitor-capture}:[39m[38;5;3m +11ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/competitor-capture/enqueue, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mRulesEngineController {/}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/rules/run, POST} route[39m[38;5;3m +18ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/alerts, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/alerts/:id, GET} route[39m[38;5;3m +14ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mRuleDefinitionsController {/rule-definitions}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/rule-definitions, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/rule-definitions, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/rule-definitions/:id, GET} route[39m[38;5;3m +17ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/rule-definitions/:id, PATCH} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mTasksController {/}:[39m[38;5;3m +16ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/tasks/from-alert/:alertId, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/tasks, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/tasks/:id, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/tasks/:id/assign, PATCH} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/tasks/:id/status, PATCH} route[39m[38;5;3m +14ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/tasks/:id/comments, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mDealerController {/dealers}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/dealers, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/dealers, GET} route[39m[38;5;3m +16ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/dealers/:id, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mDealerSalesController {/dealer-sales}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/dealer-sales, POST} route[39m[38;5;3m +12ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/dealer-sales, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/dealer-sales/:id, GET} route[39m[38;5;3m +16ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mDashboardController {/dashboard}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/dashboard/summary, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mExplainabilityController {/}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/alerts/:id/explain, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:23 pm [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/analytics/explain/margin-loss, GET} route[39m[38;5;3m +9ms[39m
+[32m[Nest] 24992  - [39m21/02/2026, 1:45:25 pm [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +2371ms[39m
+{"level":"info","message":"api.started","request_id":null,"tenant_id":null,"timestamp":"2026-02-21T08:15:26.098Z","meta":{"port":4000}}
