@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
-  REDIS_URL: z.string().min(1),
+  REDIS_URL: z.string().optional(),
   JWT_SECRET: z.string().min(1),
   PORT: z.coerce.number().int().positive().default(4000),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60000),
@@ -16,7 +16,7 @@ const envSchema = z.object({
 
 export type AppConfig = {
   databaseUrl: string;
-  redisUrl: string;
+  redisUrl: string | null;
   jwtSecret: string;
   port: number;
   rateLimitWindowMs: number;
@@ -31,7 +31,7 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): AppConfig => {
 
   return {
     databaseUrl: parsed.DATABASE_URL,
-    redisUrl: parsed.REDIS_URL,
+    redisUrl: parsed.REDIS_URL?.trim() ? parsed.REDIS_URL : null,
     jwtSecret: parsed.JWT_SECRET,
     port: parsed.PORT,
     rateLimitWindowMs: parsed.RATE_LIMIT_WINDOW_MS,

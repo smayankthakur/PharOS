@@ -57,6 +57,12 @@ npm run dev:web
 npm run dev:worker
 ```
 
+Or run all in one terminal:
+
+```bash
+npm run dev
+```
+
 ## Hosts mapping (Windows)
 
 Edit `C:\Windows\System32\drivers\etc\hosts`:
@@ -154,6 +160,38 @@ npm run gates
 
 ```bash
 npm run smoke
+```
+
+## Runtime notes
+
+- `DATABASE_URL` is required. API/DB scripts fail fast with a clear error when missing.
+- `REDIS_URL` is optional for API-only local development:
+  - API falls back to `in_memory` mode for Redis-dependent health checks.
+  - Queue-backed endpoints return `503` until `REDIS_URL` is configured.
+  - Worker still requires `REDIS_URL`.
+
+## Production env template
+
+- Use `.env.production.example` for production deployment variable baseline.
+
+## Docker
+
+- Build API image:
+
+```bash
+docker build -t pharos-api --build-arg WORKSPACE=@pharos/api .
+```
+
+- Build web image:
+
+```bash
+docker build -t pharos-web --build-arg WORKSPACE=@pharos/web .
+```
+
+- Build worker image:
+
+```bash
+docker build -t pharos-worker --build-arg WORKSPACE=@pharos/worker .
 ```
 
 ## 5-minute demo script

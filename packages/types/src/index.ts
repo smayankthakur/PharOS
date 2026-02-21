@@ -1,4 +1,4 @@
-export type ConnectionState = 'connected' | 'disconnected';
+export type ConnectionState = 'connected' | 'disconnected' | 'in_memory';
 
 export type HealthResponse = {
   status: 'ok';

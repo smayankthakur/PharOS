@@ -7,10 +7,12 @@
     "packages/*"
   ],
   "scripts": {
+    "dev": "concurrently -n api,web,worker -c cyan,green,yellow \"npm run dev:api\" \"npm run dev:web\" \"npm run dev:worker\"",
     "dev:api": "npm run dev --workspace @pharos/api",
     "dev:web": "npm run dev --workspace @pharos/web",
     "dev:worker": "npm run dev --workspace @pharos/worker",
     "build": "npm run build --workspaces",
+    "start": "npm run start --workspace @pharos/web",
     "lint": "npm run lint --workspaces",
     "typecheck": "npm run typecheck --workspaces",
     "test": "npm run test --workspace @pharos/api",
@@ -22,6 +24,8 @@
     "db:reset": "ts-node packages/db/reset.ts && ts-node packages/db/migrate.ts && ts-node packages/db/seed.ts"
   },
   "devDependencies": {
+    "concurrently": "^9.2.1",
+    "cross-env": "^7.0.3",
     "@typescript-eslint/eslint-plugin": "^8.25.0",
     "@typescript-eslint/parser": "^8.25.0",
     "eslint": "^8.57.1",

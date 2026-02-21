@@ -7,6 +7,9 @@ import { processProviderSync, type ProviderSyncJob } from './connectors/sync.js'
 
 const startWorker = async (): Promise<void> => {
   const config = loadConfig();
+  if (!config.redisUrl) {
+    throw new Error('REDIS_URL is required for worker runtime');
+  }
 
   const connection = new Redis(config.redisUrl, {
     maxRetriesPerRequest: null,
