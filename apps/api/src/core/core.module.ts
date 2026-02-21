@@ -7,6 +7,7 @@ import { GlobalExceptionFilter } from '../filters/global-exception.filter';
 import { AppLoggerService } from '../logger/app-logger.service';
 import { RequestContextService } from '../logger/request-context.service';
 import { RedisService } from '../redis/redis.service';
+import { UsageService } from '../usage/usage.service';
 
 @Module({
   providers: [
@@ -16,6 +17,7 @@ import { RedisService } from '../redis/redis.service';
     AppLoggerService,
     TenantDb,
     AuditService,
+    UsageService,
     {
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,
@@ -28,6 +30,7 @@ import { RedisService } from '../redis/redis.service';
     AppLoggerService,
     TenantDb,
     AuditService,
+    UsageService,
   ],
 })
 export class CoreModule {}

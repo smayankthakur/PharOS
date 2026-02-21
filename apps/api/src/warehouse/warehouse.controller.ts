@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Post,
+  Req,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { AuthenticatedGuard } from '../rbac/authenticated.guard';
 import { Roles } from '../rbac/roles.decorator';
@@ -12,7 +21,10 @@ import {
 @Controller('warehouses')
 @UseGuards(AuthenticatedGuard, RolesGuard)
 export class WarehouseController {
-  constructor(private readonly warehouseService: WarehouseService) {}
+  constructor(
+    @Inject(WarehouseService)
+    private readonly warehouseService: WarehouseService,
+  ) {}
 
   @Post()
   @Roles('Owner')

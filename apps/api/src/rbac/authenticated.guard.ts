@@ -11,7 +11,7 @@ export class AuthenticatedGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<Request>();
 
-    if (!request.user || !request.tenantId) {
+    if (!request.user) {
       throw new UnauthorizedException('Authentication required');
     }
 

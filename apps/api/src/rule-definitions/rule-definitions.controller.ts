@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   Param,
   Patch,
   Post,
@@ -23,7 +24,10 @@ import {
 @Controller('rule-definitions')
 @UseGuards(AuthenticatedGuard, RolesGuard)
 export class RuleDefinitionsController {
-  constructor(private readonly ruleDefinitionsService: RuleDefinitionsService) {}
+  constructor(
+    @Inject(RuleDefinitionsService)
+    private readonly ruleDefinitionsService: RuleDefinitionsService,
+  ) {}
 
   @Post()
   @Roles('Owner', 'Ops')

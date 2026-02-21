@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { type PoolClient } from 'pg';
 import { z } from 'zod';
 import { AuditService } from '../audit/audit.service';
@@ -109,7 +109,9 @@ export type InventoryMovementResponse = {
 @Injectable()
 export class InventoryService {
   constructor(
+    @Inject(DatabaseService)
     private readonly databaseService: DatabaseService,
+    @Inject(AuditService)
     private readonly auditService: AuditService,
   ) {}
 

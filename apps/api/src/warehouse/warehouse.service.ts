@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { z } from 'zod';
 import { AuditService } from '../audit/audit.service';
 import { TenantDb } from '../database/tenant-db.service';
@@ -33,7 +33,9 @@ export type WarehouseResponse = {
 @Injectable()
 export class WarehouseService {
   constructor(
+    @Inject(TenantDb)
     private readonly tenantDb: TenantDb,
+    @Inject(AuditService)
     private readonly auditService: AuditService,
   ) {}
 

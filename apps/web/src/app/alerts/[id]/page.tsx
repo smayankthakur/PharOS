@@ -41,7 +41,7 @@ type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-const AlertDetailPage = ({ params }: PageProps): JSX.Element => {
+const AlertDetailPage = ({ params }: PageProps): React.JSX.Element => {
   const [alertId, setAlertId] = useState<string>('');
   const [data, setData] = useState<AlertDetailResponse | null>(null);
   const [linkedTask, setLinkedTask] = useState<{ id: string; title: string; status: string } | null>(null);

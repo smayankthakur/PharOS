@@ -10,6 +10,8 @@ const envSchema = z.object({
   ALLOWED_ORIGINS: z
     .string()
     .default('http://pharos.local:3000,http://*.pharos.local:3000'),
+  SYSTEM_OWNER_KEY: z.string().default('dev_system_owner_key'),
+  SYSTEM_ADMIN_EMAILS: z.string().default('owner@shakti.test'),
 });
 
 export type AppConfig = {
@@ -20,6 +22,8 @@ export type AppConfig = {
   rateLimitWindowMs: number;
   rateLimitMax: number;
   allowedOrigins: string[];
+  systemOwnerKey: string;
+  systemAdminEmails: string[];
 };
 
 export const loadConfig = (env: NodeJS.ProcessEnv = process.env): AppConfig => {
@@ -35,5 +39,9 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): AppConfig => {
     allowedOrigins: parsed.ALLOWED_ORIGINS.split(',')
       .map((origin) => origin.trim())
       .filter((origin) => origin.length > 0),
+    systemOwnerKey: parsed.SYSTEM_OWNER_KEY,
+    systemAdminEmails: parsed.SYSTEM_ADMIN_EMAILS.split(',')
+      .map((email) => email.trim().toLowerCase())
+      .filter((email) => email.length > 0),
   };
 };

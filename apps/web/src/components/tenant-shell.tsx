@@ -8,7 +8,7 @@ type TenantShellProps = {
   children: ReactNode;
 };
 
-export const TenantShell = ({ children }: TenantShellProps): JSX.Element => {
+export const TenantShell = ({ children }: TenantShellProps): React.JSX.Element => {
   const { tenant, branding } = useTenant();
 
   return (

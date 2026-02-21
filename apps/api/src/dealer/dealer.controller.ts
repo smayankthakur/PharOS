@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   Param,
   Post,
   Req,
@@ -17,7 +18,10 @@ import { type CreateDealerInput, type DealerResponse, DealerService } from './de
 @Controller('dealers')
 @UseGuards(AuthenticatedGuard, RolesGuard)
 export class DealerController {
-  constructor(private readonly dealerService: DealerService) {}
+  constructor(
+    @Inject(DealerService)
+    private readonly dealerService: DealerService,
+  ) {}
 
   @Post()
   @Roles('Owner')

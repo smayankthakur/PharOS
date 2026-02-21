@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   Param,
   Post,
   Query,
@@ -23,7 +24,10 @@ import {
 @Controller('dealer-sales')
 @UseGuards(AuthenticatedGuard, RolesGuard)
 export class DealerSalesController {
-  constructor(private readonly dealerSalesService: DealerSalesService) {}
+  constructor(
+    @Inject(DealerSalesService)
+    private readonly dealerSalesService: DealerSalesService,
+  ) {}
 
   @Post()
   @Roles('Owner', 'Sales')

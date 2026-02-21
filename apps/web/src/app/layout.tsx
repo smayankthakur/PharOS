@@ -9,7 +9,7 @@ type RootLayoutProps = {
   children: ReactNode;
 };
 
-const RootLayout = async ({ children }: RootLayoutProps): Promise<JSX.Element> => {
+const RootLayout = async ({ children }: RootLayoutProps): Promise<React.JSX.Element> => {
   const host = (await headers()).get('host');
   const tenantSlug = extractTenantSlugFromHost(host);
 

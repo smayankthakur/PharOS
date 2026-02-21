@@ -25,7 +25,18 @@ type TenantScopedTable =
   | 'alert_evidence'
   | 'tasks'
   | 'task_history'
-  | 'task_comments';
+  | 'task_comments'
+  | 'alert_explanations'
+  | 'import_jobs'
+  | 'import_rows'
+  | 'integration_accounts'
+  | 'webhook_events'
+  | 'sync_runs'
+  | 'sync_state'
+  | 'external_id_map'
+  | 'tenant_feature_flags'
+  | 'tenant_domains'
+  | 'tenant_usage_daily';
 
 type Filter = Record<string, unknown>;
 
@@ -76,7 +87,7 @@ export class TenantDb {
     data: Filter,
     returning: readonly string[] = ['*'],
   ): Promise<T | null> {
-    const payload = { ...data, tenant_id: tenantId };
+    const payload: Record<string, unknown> = { ...data, tenant_id: tenantId };
     const keys = Object.keys(payload);
     if (keys.length === 0) {
       return null;

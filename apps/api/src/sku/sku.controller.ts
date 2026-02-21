@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   Param,
   Patch,
   Post,
@@ -25,7 +26,10 @@ import {
 @Controller('skus')
 @UseGuards(AuthenticatedGuard, RolesGuard)
 export class SkuController {
-  constructor(private readonly skuService: SkuService) {}
+  constructor(
+    @Inject(SkuService)
+    private readonly skuService: SkuService,
+  ) {}
 
   @Post()
   @Roles('Owner')

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { AuditService } from '../audit/audit.service';
 import { DatabaseService } from '../database/database.service';
 import { TenantDb } from '../database/tenant-db.service';
+import { UsageService } from '../usage/usage.service';
 
 type RuleCode = 'R1' | 'R2' | 'R3' | 'R4';
 type Severity = 'medium' | 'high' | 'critical';
@@ -177,6 +178,8 @@ export class RulesEngineService {
     private readonly tenantDb: TenantDb,
     @Inject(AuditService)
     private readonly auditService: AuditService,
+    @Inject(UsageService)
+    private readonly usageService: UsageService,
   ) {}
 
   async run(tenantId: string, actorUserId: string): Promise<RuleRunResponse> {
@@ -464,6 +467,7 @@ export class RulesEngineService {
         entityId: run.id,
         payload: { run_id: run.id, status: 'success', stats },
       });
+      await this.usageService.incrementUsage(tenantId, 'rule_runs');
 
       return {
         runId: run.id,
@@ -756,6 +760,7 @@ export class RulesEngineService {
           fingerprint: payload.fingerprint,
         },
       });
+      await this.usageService.incrementUsage(payload.tenantId, 'alerts_created');
     } else {
       alertId = existing.id;
       action = existing.status === 'open' ? 'updated_open' : 'reopened';

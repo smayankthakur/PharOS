@@ -1,8 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { z } from 'zod';
 import { AuditService } from '../audit/audit.service';
 import { DatabaseService } from '../database/database.service';
 import { TenantDb } from '../database/tenant-db.service';
+import { UsageService } from '../usage/usage.service';
 
 const createCompetitorSchema = z.object({
   name: z.string().trim().min(1),
@@ -153,9 +154,14 @@ export type SnapshotResponse = {
 @Injectable()
 export class CompetitorService {
   constructor(
+    @Inject(DatabaseService)
     private readonly databaseService: DatabaseService,
+    @Inject(TenantDb)
     private readonly tenantDb: TenantDb,
+    @Inject(AuditService)
     private readonly auditService: AuditService,
+    @Inject(UsageService)
+    private readonly usageService: UsageService,
   ) {}
 
   async createCompetitor(
@@ -419,6 +425,7 @@ export class CompetitorService {
         price: Number(row.price),
       },
     });
+    await this.usageService.incrementUsage(tenantId, 'snapshots_created');
 
     return this.toSnapshotResponse(row);
   }

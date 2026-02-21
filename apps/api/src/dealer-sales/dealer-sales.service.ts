@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { z } from 'zod';
 import { AuditService } from '../audit/audit.service';
 import { DatabaseService } from '../database/database.service';
@@ -72,8 +72,11 @@ export type DealerSaleResponse = {
 @Injectable()
 export class DealerSalesService {
   constructor(
+    @Inject(DatabaseService)
     private readonly databaseService: DatabaseService,
+    @Inject(TenantDb)
     private readonly tenantDb: TenantDb,
+    @Inject(AuditService)
     private readonly auditService: AuditService,
   ) {}
 

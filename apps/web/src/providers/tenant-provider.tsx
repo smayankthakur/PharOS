@@ -30,7 +30,7 @@ type TenantProviderProps = {
   children: ReactNode;
 };
 
-export const TenantProvider = ({ tenantSlug, children }: TenantProviderProps): JSX.Element => {
+export const TenantProvider = ({ tenantSlug, children }: TenantProviderProps): React.JSX.Element => {
   const [tenant, setTenant] = useState<TenantPayload['tenant'] | null>(null);
   const [branding, setBranding] = useState<TenantPayload['branding'] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(Boolean(tenantSlug));

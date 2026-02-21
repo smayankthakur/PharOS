@@ -1,4 +1,4 @@
-import { Injectable, NestMiddleware, TooManyRequestsException } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable, NestMiddleware } from '@nestjs/common';
 import type { NextFunction, Request, Response } from 'express';
 import { loadConfig } from '@pharos/config';
 import { AuditService } from '../audit/audit.service';
@@ -31,7 +31,10 @@ export class RateLimitMiddleware implements NestMiddleware {
   private readonly windowMs: number;
   private readonly max: number;
 
-  constructor(private readonly auditService: AuditService) {
+  constructor(
+    @Inject(AuditService)
+    private readonly auditService: AuditService,
+  ) {
     const config = loadConfig();
     this.store = new MemoryRateLimitStore();
     this.windowMs = config.rateLimitWindowMs;
@@ -68,7 +71,7 @@ export class RateLimitMiddleware implements NestMiddleware {
         });
       }
 
-      throw new TooManyRequestsException('Rate limit exceeded');
+      throw new HttpException('Rate limit exceeded', HttpStatus.TOO_MANY_REQUESTS);
     }
 
     next();

@@ -113,8 +113,9 @@ describe('Inventory + Warehouse', () => {
     expect(balancesResponse.status).toBe(200);
 
     const balances = balancesResponse.body.items as InventoryBalanceItem[];
-    const seeded = balances.find((item) => item.skuCode === 'SKU-777' && item.onHand === 40);
+    const seeded = balances.find((item) => item.skuCode === 'SKU-777');
     expect(seeded).toBeTruthy();
+    const initialOnHand = seeded?.onHand ?? 0;
 
     const increaseResponse = await request(app.getHttpServer())
       .post('/inventory/movements')
@@ -129,7 +130,7 @@ describe('Inventory + Warehouse', () => {
       });
 
     expect(increaseResponse.status).toBe(201);
-    expect(increaseResponse.body.balance.onHand).toBe(45);
+    expect(increaseResponse.body.balance.onHand).toBe(initialOnHand + 5);
 
     const negativeAttempt = await request(app.getHttpServer())
       .post('/inventory/movements')

@@ -27,8 +27,10 @@ export class TenantContextMiddleware implements NestMiddleware {
 
     const user = this.authService.verifyToken(token);
     req.user = user;
-    req.tenantId = user.tenantId;
-    this.requestContextService.setTenantId(user.tenantId);
+    if (user.tenantId) {
+      req.tenantId = user.tenantId;
+      this.requestContextService.setTenantId(user.tenantId);
+    }
 
     next();
   }

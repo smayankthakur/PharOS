@@ -40,7 +40,7 @@ const resolutionCodes = [
   'no_action',
 ] as const;
 
-const TaskDetailPage = ({ params }: PageProps): JSX.Element => {
+const TaskDetailPage = ({ params }: PageProps): React.JSX.Element => {
   const [taskId, setTaskId] = useState('');
   const [data, setData] = useState<TaskDetailResponse | null>(null);
   const [status, setStatus] = useState<'open' | 'in_progress' | 'blocked' | 'resolved' | 'closed'>('open');

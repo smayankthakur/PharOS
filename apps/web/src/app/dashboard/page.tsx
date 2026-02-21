@@ -63,7 +63,7 @@ const slaTone = (state: 'on_time' | 'due_soon' | 'breached'): string => {
   return 'bg-emerald-100 text-emerald-700 border-emerald-200';
 };
 
-const DashboardPage = (): JSX.Element => {
+const DashboardPage = (): React.JSX.Element => {
   const { tenant, branding } = useTenant();
   const [range, setRange] = useState<'7d' | '30d'>('30d');
   const [severity, setSeverity] = useState<'all' | 'medium' | 'high' | 'critical'>('all');

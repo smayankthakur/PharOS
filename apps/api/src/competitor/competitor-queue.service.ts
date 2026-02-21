@@ -1,6 +1,5 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { Queue } from 'bullmq';
-import Redis from 'ioredis';
 import { loadConfig } from '@pharos/config';
 
 export type CompetitorCaptureJob = {
@@ -15,13 +14,13 @@ export type CompetitorCaptureJob = {
 
 @Injectable()
 export class CompetitorQueueService implements OnModuleDestroy {
-  private readonly connection: Redis;
-  private readonly queue: Queue<CompetitorCaptureJob>;
+  private readonly queue: Queue;
 
   constructor() {
     const config = loadConfig();
-    this.connection = new Redis(config.redisUrl, { maxRetriesPerRequest: null });
-    this.queue = new Queue<CompetitorCaptureJob>('pharos-queue', { connection: this.connection });
+    this.queue = new Queue('pharos-queue', {
+      connection: { url: config.redisUrl },
+    });
   }
 
   async enqueueCapture(job: CompetitorCaptureJob): Promise<string> {
@@ -32,9 +31,8 @@ export class CompetitorQueueService implements OnModuleDestroy {
   async onModuleDestroy(): Promise<void> {
     try {
       await this.queue.close();
-      await this.connection.quit();
     } catch {
-      this.connection.disconnect();
+      // no-op during shutdown
     }
   }
 }

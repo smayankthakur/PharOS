@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Inject,
   Post,
   Req,
   UnauthorizedException,
@@ -12,6 +13,8 @@ import type { Request } from 'express';
 import { AuthenticatedGuard } from '../rbac/authenticated.guard';
 import { Roles } from '../rbac/roles.decorator';
 import { RolesGuard } from '../rbac/roles.guard';
+import { RequireFeature } from '../security/feature-flags.decorator';
+import { FeatureFlagsGuard } from '../security/feature-flags.guard';
 import { CompetitorQueueService } from './competitor-queue.service';
 
 const enqueueCaptureSchema = z.object({
@@ -26,9 +29,13 @@ const enqueueCaptureSchema = z.object({
 type EnqueueCaptureInput = z.input<typeof enqueueCaptureSchema>;
 
 @Controller('competitor-capture')
-@UseGuards(AuthenticatedGuard, RolesGuard)
+@UseGuards(AuthenticatedGuard, RolesGuard, FeatureFlagsGuard)
+@RequireFeature('competitor_engine')
 export class CompetitorCaptureController {
-  constructor(private readonly competitorQueueService: CompetitorQueueService) {}
+  constructor(
+    @Inject(CompetitorQueueService)
+    private readonly competitorQueueService: CompetitorQueueService,
+  ) {}
 
   @Post('enqueue')
   @Roles('Owner', 'Ops')
@@ -45,15 +52,33 @@ export class CompetitorCaptureController {
     if (!parsed.success) {
       throw new BadRequestException(parsed.error.flatten());
     }
-    const jobId = await this.competitorQueueService.enqueueCapture({
+    const payload: {
+      tenant_id: string;
+      competitor_item_id: string;
+      price: number;
+      currency?: string;
+      captured_at?: string;
+      evidence_json?: Record<string, unknown>;
+      raw_json?: Record<string, unknown>;
+    } = {
       tenant_id: tenantId,
       competitor_item_id: parsed.data.competitor_item_id,
       price: parsed.data.price,
-      currency: parsed.data.currency,
-      captured_at: parsed.data.captured_at,
-      evidence_json: parsed.data.evidence_json,
-      raw_json: parsed.data.raw_json,
-    });
+    };
+    if (parsed.data.currency !== undefined) {
+      payload.currency = parsed.data.currency;
+    }
+    if (parsed.data.captured_at !== undefined) {
+      payload.captured_at = parsed.data.captured_at;
+    }
+    if (parsed.data.evidence_json !== undefined) {
+      payload.evidence_json = parsed.data.evidence_json;
+    }
+    if (parsed.data.raw_json !== undefined) {
+      payload.raw_json = parsed.data.raw_json;
+    }
+
+    const jobId = await this.competitorQueueService.enqueueCapture(payload);
 
     return { enqueued: true, jobId };
   }

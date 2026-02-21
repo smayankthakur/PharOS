@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   Post,
   Query,
   Req,
@@ -23,7 +24,10 @@ import {
 @Controller('inventory')
 @UseGuards(AuthenticatedGuard, RolesGuard)
 export class InventoryController {
-  constructor(private readonly inventoryService: InventoryService) {}
+  constructor(
+    @Inject(InventoryService)
+    private readonly inventoryService: InventoryService,
+  ) {}
 
   @Get('balances')
   @Roles('Owner', 'Sales', 'Ops', 'Viewer')

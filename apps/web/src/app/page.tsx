@@ -1,7 +1,7 @@
 import { headers } from 'next/headers';
 import { extractTenantSlugFromHost } from '../lib/tenant';
 
-const HomePage = async (): Promise<JSX.Element> => {
+const HomePage = async (): Promise<React.JSX.Element> => {
   const host = (await headers()).get('host');
   const tenantSlug = extractTenantSlugFromHost(host);
 

@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   Param,
   Patch,
   Post,
@@ -14,6 +15,8 @@ import type { Request } from 'express';
 import { AuthenticatedGuard } from '../rbac/authenticated.guard';
 import { Roles } from '../rbac/roles.decorator';
 import { RolesGuard } from '../rbac/roles.guard';
+import { RequireFeature } from '../security/feature-flags.decorator';
+import { FeatureFlagsGuard } from '../security/feature-flags.guard';
 import {
   type CompetitorItemResponse,
   type CompetitorResponse,
@@ -28,9 +31,13 @@ import {
 } from './competitor.service';
 
 @Controller()
-@UseGuards(AuthenticatedGuard, RolesGuard)
+@UseGuards(AuthenticatedGuard, RolesGuard, FeatureFlagsGuard)
+@RequireFeature('competitor_engine')
 export class CompetitorController {
-  constructor(private readonly competitorService: CompetitorService) {}
+  constructor(
+    @Inject(CompetitorService)
+    private readonly competitorService: CompetitorService,
+  ) {}
 
   @Post('competitors')
   @Roles('Owner', 'Ops')

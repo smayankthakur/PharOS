@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Inject, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { AuthenticatedGuard } from '../rbac/authenticated.guard';
 import { Roles } from '../rbac/roles.decorator';
@@ -7,7 +7,10 @@ import { AuditService, type AuditLogResponse } from './audit.service';
 
 @Controller('audit')
 export class AuditController {
-  constructor(private readonly auditService: AuditService) {}
+  constructor(
+    @Inject(AuditService)
+    private readonly auditService: AuditService,
+  ) {}
 
   @Get('current')
   @UseGuards(AuthenticatedGuard, RolesGuard)

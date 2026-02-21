@@ -23,23 +23,25 @@ const bootstrap = async (): Promise<void> => {
 
   const allowedOrigins = config.allowedOrigins;
 
+  const corsOrigin = (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void): void => {
+    if (!origin) {
+      callback(null, true);
+      return;
+    }
+
+    const allowed = allowedOrigins.some((pattern) => matchesWildcardOrigin(origin, pattern));
+
+    if (allowed) {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error('CORS origin denied'));
+  };
+
   app.enableCors({
     credentials: true,
-    origin: (origin, callback) => {
-      if (!origin) {
-        callback(null, true);
-        return;
-      }
-
-      const allowed = allowedOrigins.some((pattern) => matchesWildcardOrigin(origin, pattern));
-
-      if (allowed) {
-        callback(null, true);
-        return;
-      }
-
-      callback(new Error('CORS origin denied'));
-    },
+    origin: corsOrigin,
   });
 
   const logger = app.get(AppLoggerService);

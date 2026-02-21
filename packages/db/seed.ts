@@ -796,6 +796,25 @@ const seedTenant = async (
     [resolvedTenantId],
   );
 
+  await client.query(
+    `
+    INSERT INTO tenant_feature_flags (tenant_id, flags_json, updated_at)
+    VALUES ($1, $2::jsonb, now())
+    ON CONFLICT (tenant_id) DO UPDATE SET
+      flags_json = EXCLUDED.flags_json,
+      updated_at = now()
+    `,
+    [
+      resolvedTenantId,
+      JSON.stringify({
+        competitor_engine: true,
+        imports: true,
+        connectors: true,
+        notifications: false,
+      }),
+    ],
+  );
+
   const roleValues: Array<[string, string]> = [
     [ownerRoleId, 'Owner'],
     [salesRoleId, 'Sales'],

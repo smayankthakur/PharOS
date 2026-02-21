@@ -3,7 +3,7 @@
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-const LoginPage = (): JSX.Element => {
+const LoginPage = (): React.JSX.Element => {
   const router = useRouter();
   const [email, setEmail] = useState('owner@shakti.test');
   const [password, setPassword] = useState('Admin@12345');
@@ -28,7 +28,10 @@ const LoginPage = (): JSX.Element => {
         return;
       }
 
-      router.replace('/dashboard');
+      const host =
+        typeof window !== 'undefined' ? (window.location.host.toLowerCase().split(':')[0] ?? '') : '';
+      const hasTenantSubdomain = host.endsWith('.pharos.local') && host !== 'pharos.local';
+      router.replace(hasTenantSubdomain ? '/dashboard' : '/reseller');
     } catch {
       setError('Login failed');
     } finally {

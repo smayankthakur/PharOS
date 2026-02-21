@@ -7,7 +7,8 @@ const isProtectedPath = (pathname: string): boolean => {
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/settings') ||
     pathname.startsWith('/alerts') ||
-    pathname.startsWith('/tasks')
+    pathname.startsWith('/tasks') ||
+    pathname.startsWith('/reseller')
   );
 };
 
@@ -18,9 +19,24 @@ export function middleware(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
 
   if (!tenantSlug) {
-    if (pathname !== '/' && !pathname.startsWith('/api')) {
+    const isAllowedRootPath = pathname === '/' || pathname === '/login' || pathname.startsWith('/reseller');
+    if (!isAllowedRootPath && !pathname.startsWith('/api')) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = '/';
+      redirectUrl.search = '';
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    if (pathname.startsWith('/reseller') && !token) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/login';
+      redirectUrl.search = '';
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    if (pathname === '/login' && token) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/reseller';
       redirectUrl.search = '';
       return NextResponse.redirect(redirectUrl);
     }

@@ -9,14 +9,18 @@ import { DealerModule } from './dealer/dealer.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { ExplainabilityModule } from './explainability/explainability.module';
 import { HealthController } from './health/health.controller';
+import { ImportsModule } from './imports/imports.module';
 import { RequestContextMiddleware } from './logger/request-context.middleware';
 import { AuthenticatedGuard } from './rbac/authenticated.guard';
 import { ProofController } from './rbac/proof.controller';
 import { RolesGuard } from './rbac/roles.guard';
+import { ResellerModule } from './reseller/reseller.module';
 import { RuleDefinitionsModule } from './rule-definitions/rule-definitions.module';
 import { RulesEngineModule } from './rules-engine/rules-engine.module';
 import { RateLimitMiddleware } from './security/rate-limit.middleware';
+import { FeatureFlagsGuard } from './security/feature-flags.guard';
 import { InventoryModule } from './inventory/inventory.module';
+import { IntegrationsModule } from './integrations/integrations.module';
 import { SkuModule } from './sku/sku.module';
 import { TenantsModule } from './tenants/tenants.module';
 import { TasksModule } from './tasks/tasks.module';
@@ -26,10 +30,13 @@ import { WarehouseModule } from './warehouse/warehouse.module';
   imports: [
     CoreModule,
     AuthModule,
+    ResellerModule,
     TenantsModule,
     SkuModule,
     WarehouseModule,
     InventoryModule,
+    ImportsModule,
+    IntegrationsModule,
     CompetitorModule,
     RulesEngineModule,
     RuleDefinitionsModule,
@@ -46,6 +53,7 @@ import { WarehouseModule } from './warehouse/warehouse.module';
     RateLimitMiddleware,
     AuthenticatedGuard,
     RolesGuard,
+    FeatureFlagsGuard,
   ],
 })
 export class AppModule implements NestModule {

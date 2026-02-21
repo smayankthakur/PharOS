@@ -1,6 +1,6 @@
 'use client';
 
-export const DarkModeToggle = (): JSX.Element => {
+export const DarkModeToggle = (): React.JSX.Element => {
   return (
     <button
       type="button"

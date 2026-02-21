@@ -8,6 +8,17 @@ Unknown events are rejected by `AuditService.record()` and logged as warnings.
 - Required payload fields:
   - `email` (string)
 
+## auth.user.created
+- Producer: `POST /auth/users`
+- Required payload fields:
+  - `email` (string)
+  - `roles` (string[])
+
+## tenant.created
+- Producer: `POST /tenants`
+- Required payload fields:
+  - `slug` (string)
+
 ## tenant.view
 - Producer: `GET /tenants/current`
 - Required payload fields:
@@ -17,6 +28,18 @@ Unknown events are rejected by `AuditService.record()` and logged as warnings.
 - Producer: `GET /tenants/by-slug/:slug`
 - Required payload fields:
   - `slug` (string)
+
+## tenant.branding.view
+- Producer: `GET /tenants/current/branding`
+- Required payload fields:
+  - `has_logo` (boolean)
+
+## tenant.branding.update
+- Producer: `PATCH /tenants/current/branding`
+- Required payload fields:
+  - `logo_url` (string | null)
+  - `primary_color` (string | null)
+  - `secondary_color` (string | null)
 
 ## rbac.denied
 - Producer: RBAC guard on protected endpoints
@@ -188,3 +211,104 @@ Unknown events are rejected by `AuditService.record()` and logged as warnings.
 - Required payload fields:
   - `task_id` (uuid string)
   - `comment_id` (uuid string)
+
+## import.started
+- Producer: `POST /imports/start`
+- Required payload fields:
+  - `import_job_id` (uuid string)
+  - `type` ('dealer_sales' | 'inventory_movements' | 'competitor_snapshots')
+  - `total_rows` (number)
+  - `idempotency_key` (string)
+
+## import.completed
+- Producer: `POST /imports/start`
+- Required payload fields:
+  - `import_job_id` (uuid string)
+  - `status` ('success' | 'partial' | 'failed')
+  - `success_rows` (number)
+  - `error_rows` (number)
+
+## import.row.error
+- Producer: `POST /imports/start` (row-level)
+- Required payload fields:
+  - `import_job_id` (uuid string)
+  - `row_number` (number)
+  - `error` (string)
+
+## webhook.received
+- Producer: `POST /webhooks/:provider`
+- Required payload fields:
+  - `provider` ('shopify' | 'woocommerce' | 'generic_rest')
+  - `event_type` (string)
+  - `external_id` (string)
+
+## webhook.processed
+- Producer: worker `webhook.process` job
+- Required payload fields:
+  - `provider` ('shopify' | 'woocommerce' | 'generic_rest')
+  - `event_type` (string)
+
+## webhook.failed
+- Producer: worker `webhook.process` job
+- Required payload fields:
+  - `provider` ('shopify' | 'woocommerce' | 'generic_rest')
+  - `error` (string)
+
+## sync.started
+- Producer: `POST /connectors/:provider/sync` and worker sync processor
+- Required payload fields:
+  - `provider` ('shopify' | 'woocommerce' | 'generic_rest')
+  - `resource` ('orders' | 'inventory' | 'products' | 'competitor')
+  - `mode` ('full' | 'incremental')
+
+## sync.completed
+- Producer: worker `provider.sync` job
+- Required payload fields:
+  - `provider` ('shopify' | 'woocommerce' | 'generic_rest')
+  - `resource` ('orders' | 'inventory' | 'products' | 'competitor')
+  - `status` ('success' | 'partial')
+  - `stats` ({ fetched, inserted, skipped, errors })
+
+## sync.failed
+- Producer: worker `provider.sync` job
+- Required payload fields:
+  - `provider` ('shopify' | 'woocommerce' | 'generic_rest')
+  - `resource` ('orders' | 'inventory' | 'products' | 'competitor')
+  - `error` (string)
+
+## connector.tested
+- Producer: `POST /connectors/:provider/test`
+- Required payload fields:
+  - `provider` ('shopify' | 'woocommerce' | 'generic_rest')
+
+## reseller.created
+- Producer: `POST /resellers`
+- Required payload fields:
+  - `slug` (string)
+
+## reseller.user.added
+- Producer: `POST /resellers/:id/users`
+- Required payload fields:
+  - `user_id` (uuid string)
+  - `role` ('reseller_admin' | 'reseller_ops' | 'reseller_viewer')
+
+## tenant.provisioned
+- Producer: `POST /reseller/tenants`
+- Required payload fields:
+  - `reseller_id` (uuid string | null)
+  - `tenant_slug` (string)
+
+## tenant.flags.updated
+- Producer: `PATCH /tenants/:tenantId/flags`
+- Required payload fields:
+  - `flags_json` (object)
+
+## tenant.domain.added
+- Producer: `POST /tenants/:tenantId/domains`
+- Required payload fields:
+  - `domain` (string)
+
+## tenant.domain.updated
+- Producer: `PATCH /tenants/:tenantId/domains/:domainId`
+- Required payload fields:
+  - `status` ('pending' | 'disabled')

@@ -1,4 +1,4 @@
-const UnknownTenantPage = (): JSX.Element => {
+const UnknownTenantPage = (): React.JSX.Element => {
   return (
     <section>
       <h2 className="text-xl font-semibold text-rose-700">Unknown Tenant</h2>

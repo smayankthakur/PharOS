@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { apiBaseUrl } from '../../../../../../lib/tenant';
-import { authHeaderFromCookie } from '../../../../../../lib/server/auth';
+import { apiBaseUrl } from '../../../../../lib/tenant';
+import { authHeaderFromCookie } from '../../../../../lib/server/auth';
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -18,4 +18,3 @@ export const GET = async (_request: Request, context: RouteContext): Promise<Nex
   const payload = (await response.json()) as Record<string, unknown>;
   return NextResponse.json(payload, { status: response.status });
 };
-

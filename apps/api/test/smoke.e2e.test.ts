@@ -11,6 +11,7 @@ describe('API smoke', () => {
   let shaktiOwnerToken = '';
   let vikramOwnerToken = '';
   let vikramTenantId = '';
+  const systemOwnerKey = process.env.SYSTEM_OWNER_KEY ?? 'dev_system_owner_key';
 
   const login = async (email: string, password: string): Promise<string> => {
     const response = await request(app.getHttpServer()).post('/auth/login').send({
@@ -111,5 +112,64 @@ describe('API smoke', () => {
     for (const row of rows) {
       expect(row.tenantId).toBe(vikramTenantId);
     }
+  });
+
+  it('system owner can list and create tenant', async () => {
+    const listResponse = await request(app.getHttpServer())
+      .get('/tenants')
+      .set('x-system-owner-key', systemOwnerKey);
+
+    expect(listResponse.status).toBe(200);
+    expect(Array.isArray(listResponse.body)).toBe(true);
+
+    const createResponse = await request(app.getHttpServer())
+      .post('/tenants')
+      .set('x-system-owner-key', systemOwnerKey)
+      .send({
+        name: 'Demo Tenant',
+        slug: 'demo-tenant',
+        owner_name: 'Demo Owner',
+        owner_email: 'owner@demo-tenant.test',
+        owner_password: 'Admin@12345',
+        branding: {
+          primary_color: '#0F766E',
+          secondary_color: '#1E293B',
+        },
+      });
+
+    expect(createResponse.status).toBe(201);
+    expect(createResponse.body.tenant.slug).toBe('demo-tenant');
+  });
+
+  it('owner can create user and update branding', async () => {
+    const createUserResponse = await request(app.getHttpServer())
+      .post('/auth/users')
+      .set('authorization', `Bearer ${shaktiOwnerToken}`)
+      .send({
+        name: 'Shakti Extra Sales',
+        email: 'extra-sales@shakti.test',
+        password: 'Admin@12345',
+        roles: ['Sales'],
+      });
+
+    expect(createUserResponse.status).toBe(201);
+    expect(createUserResponse.body.roles).toEqual(['Sales']);
+
+    const currentBranding = await request(app.getHttpServer())
+      .get('/tenants/current/branding')
+      .set('authorization', `Bearer ${shaktiOwnerToken}`);
+    expect(currentBranding.status).toBe(200);
+
+    const updateBranding = await request(app.getHttpServer())
+      .patch('/tenants/current/branding')
+      .set('authorization', `Bearer ${shaktiOwnerToken}`)
+      .send({
+        logo_url: 'https://cdn.pharos.local/shakti-updated-logo.png',
+        primary_color: '#14532D',
+        secondary_color: '#0F172A',
+      });
+
+    expect(updateBranding.status).toBe(200);
+    expect(updateBranding.body.primaryColor).toBe('#14532D');
   });
 });

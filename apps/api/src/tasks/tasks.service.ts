@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { AuditService } from '../audit/audit.service';
 import { DatabaseService } from '../database/database.service';
 import { TenantDb } from '../database/tenant-db.service';
+import { UsageService } from '../usage/usage.service';
 
 const assignTaskSchema = z
   .object({
@@ -210,6 +211,8 @@ export class TasksService {
     private readonly tenantDb: TenantDb,
     @Inject(AuditService)
     private readonly auditService: AuditService,
+    @Inject(UsageService)
+    private readonly usageService: UsageService,
   ) {}
 
   async createFromAlert(
@@ -314,6 +317,7 @@ export class TasksService {
       entityId: created.id,
       payload: { task_id: created.id, alert_id: created.alert_id, assigned_role: assignedRole, sla_hours: slaHours },
     });
+    await this.usageService.incrementUsage(tenantId, 'tasks_created');
 
     return { ...this.toTaskResponse(created), created: true };
   }
