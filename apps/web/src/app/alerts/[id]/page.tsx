@@ -22,7 +22,15 @@ type AlertDetailResponse = {
     evidenceJson: Record<string, unknown>;
     createdAt: string;
   }>;
-  math_breakdown_json: Record<string, unknown>;
+  narrative_text: string;
+  timeline_json: Array<{
+    at: string;
+    type: string;
+    text: string;
+    meta: Record<string, unknown>;
+  }>;
+  suggestions_json: string[];
+  math_json: Record<string, unknown>;
 };
 
 type TaskListResponse = {
@@ -54,7 +62,7 @@ const AlertDetailPage = ({ params }: PageProps): JSX.Element => {
         }
         setAlertId(resolvedParams.id);
 
-        const alert = await apiGet<AlertDetailResponse>(`/api/alerts/${resolvedParams.id}`);
+        const alert = await apiGet<AlertDetailResponse>(`/api/alerts/${resolvedParams.id}/explain`);
         if (!mounted) {
           return;
         }
@@ -105,9 +113,35 @@ const AlertDetailPage = ({ params }: PageProps): JSX.Element => {
       </div>
 
       <div className="rounded border border-slate-200 bg-white p-4">
+        <h3 className="text-sm font-semibold uppercase text-slate-500">WHY</h3>
+        <p className="mt-2 text-sm text-slate-800">{data.narrative_text}</p>
+        <div className="mt-3 grid gap-3 lg:grid-cols-2">
+          <div>
+            <p className="text-xs font-semibold uppercase text-slate-500">Timeline</p>
+            <div className="mt-2 space-y-2">
+              {data.timeline_json.map((event, index) => (
+                <div key={`${event.at}-${event.type}-${index}`} className="rounded border border-slate-200 p-2 text-sm">
+                  <p className="font-medium">{event.text}</p>
+                  <p className="text-xs text-slate-500">{new Date(event.at).toLocaleString()}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase text-slate-500">Suggested Actions</p>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-800">
+              {data.suggestions_json.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded border border-slate-200 bg-white p-4">
         <h3 className="text-sm font-semibold uppercase text-slate-500">Math Breakdown</h3>
         <pre className="mt-2 overflow-auto rounded bg-slate-900 p-3 text-xs text-slate-100">
-          {JSON.stringify(data.math_breakdown_json, null, 2)}
+          {JSON.stringify(data.math_json, null, 2)}
         </pre>
       </div>
 

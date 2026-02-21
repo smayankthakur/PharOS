@@ -57,6 +57,7 @@ type AlertRow = {
   competitor_item_id: string | null;
   warehouse_id: string | null;
   detected_at: Date;
+  updated_at: Date;
   fingerprint: string;
   created_at: Date;
 };
@@ -706,6 +707,7 @@ export class RulesEngineService {
         'competitor_item_id',
         'warehouse_id',
         'detected_at',
+        'updated_at',
         'fingerprint',
         'created_at',
       ],
@@ -731,6 +733,7 @@ export class RulesEngineService {
           competitor_item_id: payload.competitorItemId ?? null,
           warehouse_id: payload.warehouseId ?? null,
           detected_at: new Date(),
+          updated_at: new Date(),
           fingerprint: payload.fingerprint,
         },
         ['id'],
@@ -771,6 +774,7 @@ export class RulesEngineService {
           competitor_item_id: payload.competitorItemId ?? null,
           warehouse_id: payload.warehouseId ?? null,
           detected_at: new Date(),
+          updated_at: new Date(),
         },
         { id: existing.id },
         ['id'],

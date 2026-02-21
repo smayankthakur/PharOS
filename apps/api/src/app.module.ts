@@ -7,6 +7,7 @@ import { CompetitorModule } from './competitor/competitor.module';
 import { DealerSalesModule } from './dealer-sales/dealer-sales.module';
 import { DealerModule } from './dealer/dealer.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { ExplainabilityModule } from './explainability/explainability.module';
 import { HealthController } from './health/health.controller';
 import { RequestContextMiddleware } from './logger/request-context.middleware';
 import { AuthenticatedGuard } from './rbac/authenticated.guard';
@@ -36,6 +37,7 @@ import { WarehouseModule } from './warehouse/warehouse.module';
     DealerModule,
     DealerSalesModule,
     DashboardModule,
+    ExplainabilityModule,
   ],
   controllers: [HealthController, ProofController, AuditController],
   providers: [
