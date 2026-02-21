@@ -346,3 +346,65 @@ Require stack:
  GET / 500 in 547ms
  ✓ Compiled in 879ms (386 modules)
  ✓ Compiled in 644ms (386 modules)
+ ⨯ Error: Cannot find module './331.js'
+Require stack:
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\.next\server\webpack-runtime.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\.next\server\pages\_document.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\server\require.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\server\load-components.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\build\utils.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\build\swc\options.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\build\swc\index.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\build\analysis\parse-module.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\build\analysis\get-page-static-info.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\server\lib\router-server.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\.next\server\app\page.js:2:7772)
+    at Object.<anonymous> (c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\.next\server\app\page.js:2:7825) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'c:\\Users\\hp\\OneDrive - Mayank Thakur\\Desktop\\PharOS\\PharOS main\\pharos\\apps\\web\\.next\\routes-manifest.json'
+}
+Error: Cannot find module './331.js'
+Require stack:
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\.next\server\webpack-runtime.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\.next\server\pages\_document.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\server\require.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\server\load-components.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\build\utils.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\build\swc\options.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\build\swc\index.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\build\analysis\parse-module.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\build\analysis\get-page-static-info.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\server\lib\router-server.js
+- c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\.next\server\app\page.js:2:7772)
+    at Object.<anonymous> (c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\.next\server\app\page.js:2:7825) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'c:\\Users\\hp\\OneDrive - Mayank Thakur\\Desktop\\PharOS\\PharOS main\\pharos\\apps\\web\\.next\\routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open 'c:\Users\hp\OneDrive - Mayank Thakur\Desktop\PharOS\PharOS main\pharos\apps\web\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'c:\\Users\\hp\\OneDrive - Mayank Thakur\\Desktop\\PharOS\\PharOS main\\pharos\\apps\\web\\.next\\routes-manifest.json'
+}
+ GET / 500 in 1795ms
+ GET / 500 in 551ms
+ ✓ Compiled in 4.1s (385 modules)
+ ✓ Compiled in 482ms (385 modules)
