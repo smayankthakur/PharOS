@@ -35,3 +35,4 @@ npm error A complete log of this run can be found in: C:\Users\hp\AppData\Local\
  ✓ Compiled / in 9.3s (543 modules)
  GET / 200 in 14414ms
  GET / 200 in 615ms
+ GET / 200 in 553ms
