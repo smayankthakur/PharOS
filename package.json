@@ -2,6 +2,9 @@
   "name": "pharos",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -25,6 +28,7 @@
     "lint": "npm run lint --workspaces",
     "typecheck": "npm run typecheck --workspaces",
     "test": "npm run test --workspace @pharos/api",
+    "check:lock": "node scripts/check-lock-platform.mjs",
     "check:lock-platform": "node scripts/check-lock-platform.mjs",
     "smoke": "node scripts/smoke.mjs",
     "gates": "node scripts/gates.mjs",

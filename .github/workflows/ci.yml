@@ -55,7 +55,7 @@ jobs:
         working-directory: pharos
 
       - name: Validate lockfile platform safety
-        run: npm run check:lock-platform
+        run: npm run check:lock
         working-directory: pharos
 
       - name: Run migrations
@@ -76,4 +76,8 @@ jobs:
 
       - name: Test
         run: npm run test
+        working-directory: pharos
+
+      - name: Build
+        run: npm run build
         working-directory: pharos
