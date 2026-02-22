@@ -201,17 +201,41 @@ Create a Vercel project for the web app only:
 2. Use default Next.js framework detection.
 3. Set Node runtime to `20.x` and install command to `npm ci`.
 4. Set env vars in Vercel project:
-   - `API_URL=https://<your-api-domain>`
-   - `NEXT_PUBLIC_API_URL=https://<your-api-domain>`
-   - `TENANT_HOST_SUFFIX=<your-web-domain>` (example: `app.example.com`)
-   - `NEXT_PUBLIC_TENANT_HOST_SUFFIX=<your-web-domain>`
+   - `API_URL=https://pharos-g1ts.onrender.com`
+   - `NEXT_PUBLIC_API_URL=https://pharos-g1ts.onrender.com` (must be absolute `https://...`)
+   - `TENANT_HOST_SUFFIX=pharos.sitelytc.com`
+   - `NEXT_PUBLIC_TENANT_HOST_SUFFIX=pharos.sitelytc.com`
 5. Deploy.
+6. Add domains:
+   - `https://pharos-one.vercel.app`
+   - `https://pharos.sitelytc.com`
 
 Notes:
 - API and worker are separate services; host them outside Vercel (Render/Fly/Railway).
 - Never add platform-specific SWC packages (e.g. `@next/swc-win32-*`) as direct dependencies.
 - Lockfile safety is enforced by `scripts/check-lock-platform.mjs` in CI.
 - Cookie auth is `httpOnly` and `sameSite=lax`; privileged API routes rely on Bearer token auth.
+
+## Render hosting (API)
+
+Use one Render web service for `apps/api`:
+
+- Root Directory: `.`
+- Build Command: `npm install && npm run build:api`
+- Start Command: `npm run start -w @pharos/api`
+- Release Command: `npm run migrate`
+- Health Check Path: `/health`
+
+Set these environment variables:
+
+- `ALLOWED_ORIGINS=https://pharos-one.vercel.app,https://pharos.sitelytc.com`
+- `REDIS_URL=redis://red-d6dl3r14tr6s73ctpca0:6379`
+- `RATE_LIMIT_BACKEND=redis`
+- `RATE_LIMIT_MAX=100`
+- `RATE_LIMIT_WINDOW_SEC=60`
+- `DATABASE_URL=<render-postgres-url>`
+- `JWT_SECRET=<min_32_chars>`
+- `SYSTEM_OWNER_KEY=<min_32_chars>`
 
 ## Docker
 

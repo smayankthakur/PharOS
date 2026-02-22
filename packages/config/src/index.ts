@@ -9,6 +9,7 @@ const envSchema = z.object({
   JWT_AUDIENCE: z.string().trim().optional(),
   PORT: z.coerce.number().int().positive().default(4000),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60000),
+  RATE_LIMIT_WINDOW_SEC: z.coerce.number().int().positive().optional(),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(120),
   RATE_LIMIT_LOGIN_MAX: z.coerce.number().int().positive().default(10),
   RATE_LIMIT_SYSTEM_MAX: z.coerce.number().int().positive().default(30),
@@ -72,7 +73,10 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): AppConfig => {
     jwtIssuer: parsed.JWT_ISSUER?.trim() ? parsed.JWT_ISSUER : null,
     jwtAudience: parsed.JWT_AUDIENCE?.trim() ? parsed.JWT_AUDIENCE : null,
     port: parsed.PORT,
-    rateLimitWindowMs: parsed.RATE_LIMIT_WINDOW_MS,
+    rateLimitWindowMs:
+      typeof parsed.RATE_LIMIT_WINDOW_SEC === 'number'
+        ? parsed.RATE_LIMIT_WINDOW_SEC * 1000
+        : parsed.RATE_LIMIT_WINDOW_MS,
     rateLimitMax: parsed.RATE_LIMIT_MAX,
     rateLimitLoginMax: parsed.RATE_LIMIT_LOGIN_MAX,
     rateLimitSystemMax: parsed.RATE_LIMIT_SYSTEM_MAX,
