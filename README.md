@@ -174,6 +174,21 @@ npm run smoke
 
 - Use `.env.production.example` for production deployment variable baseline.
 
+## Vercel hosting (Web)
+
+Create a Vercel project for the web app only:
+
+1. Import repo and set **Root Directory** to `apps/web`.
+2. Use default Next.js framework detection.
+3. Set env vars in Vercel project:
+   - `API_URL=https://<your-api-domain>`
+   - `NEXT_PUBLIC_API_URL=https://<your-api-domain>`
+4. Deploy.
+
+Notes:
+- API and worker are separate services; host them outside Vercel (Render/Fly/Railway).
+- Never add platform-specific SWC packages (e.g. `@next/swc-win32-*`) as direct dependencies.
+
 ## Docker
 
 - Build API image:

@@ -6,6 +6,20 @@
 - PostgreSQL: Neon or Supabase
 - Redis: Upstash
 
+## Vercel (Web) setup
+
+Use one Vercel project for the web app with:
+
+- Root Directory: `apps/web`
+- Framework Preset: `Next.js`
+- Install Command: `npm install`
+- Build Command: `npm run build`
+- Output Directory: `.next` (default)
+
+Important:
+- Do not pin platform-specific SWC packages (for example `@next/swc-win32-*`) in `apps/web/package.json`.
+- Keep API hosted separately (Render/Fly/Railway) and point web to it via env vars.
+
 ## Required environment variables
 
 ### Web
@@ -53,3 +67,4 @@
 2. Login with seeded user works
 3. Tenant branding loads on tenant subdomain
 4. Demo mode toggle works via settings page (`/settings`)
+5. Dashboard loads on Vercel URL without hydration/runtime errors

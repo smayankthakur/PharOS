@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import { Worker } from 'bullmq';
-import Redis from 'ioredis';
 import { Pool } from 'pg';
 import { loadConfig } from '@pharos/config';
 import { processProviderSync, type ProviderSyncJob } from './connectors/sync.js';
@@ -11,9 +10,10 @@ const startWorker = async (): Promise<void> => {
     throw new Error('REDIS_URL is required for worker runtime');
   }
 
-  const connection = new Redis(config.redisUrl, {
+  const connection = {
+    url: config.redisUrl,
     maxRetriesPerRequest: null,
-  });
+  };
 
   const pool = new Pool({ connectionString: config.databaseUrl });
   const worker = new Worker(
@@ -114,10 +114,8 @@ const startWorker = async (): Promise<void> => {
     try {
       await worker.close();
       await pool.end();
-      await connection.quit();
     } catch {
       await pool.end().catch(() => undefined);
-      connection.disconnect();
     }
 
     process.exit(0);

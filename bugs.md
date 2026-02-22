@@ -1,7 +1,7 @@
 # PharOS Codebase Bug Audit
 
-Date: 2026-02-21
-Scope: Full repo verification using `npm run typecheck`, `npm run lint`, `npm run test` and targeted runtime fixes.
+Date: 2026-02-22
+Scope: Full repo verification using `npm install`, `npm run typecheck`, `npm run lint`, `npm run build`, `npm run test`, `node scripts/gates.mjs`, and Vercel/Linux deployment-readiness checks.
 
 ## Fixed Bugs
 
@@ -26,6 +26,8 @@ Scope: Full repo verification using `npm run typecheck`, `npm run lint`, `npm ru
 | BUG-017 | Medium | No production env template for deploy targets | Missing `.env.production.example` | Added complete `.env.production.example` for API/Web/Worker | Fixed |
 | BUG-018 | Medium | Root runtime scripts incomplete for deployment smoke | No root `start` script and no API/Worker start scripts | Added root `start`, API `start`, Worker `start` scripts | Fixed |
 | BUG-019 | Medium | Missing container build artifact at repo root | No root `Dockerfile` for workspace services | Added multi-workspace Dockerfile using `WORKSPACE` build arg | Fixed |
+| BUG-020 | Blocking | Worker typecheck failed with `Type 'Redis' is not assignable to type 'ConnectionOptions'` | Two different `ioredis` type versions (root vs bullmq nested) caused strict TS incompatibility when passing a `Redis` instance directly to BullMQ Worker | Switched worker to pass plain BullMQ `connection` options object (`{ url, maxRetriesPerRequest }`) and removed direct Redis instance dependency in worker bootstrap | Fixed |
+| BUG-021 | Blocking | Vercel Linux build could fail with `Unsupported platform for @next/swc-win32-x64-msvc` | Direct platform-specific SWC package entry under web workspace | Removed direct `@next/swc-win32-x64-msvc` from `apps/web/package.json` and regenerated lockfile | Fixed |
 
 ## Verification After Fixes
 
@@ -35,6 +37,7 @@ Scope: Full repo verification using `npm run typecheck`, `npm run lint`, `npm ru
 - `npm run build` -> PASS
 - `node scripts/gates.mjs` -> PASS (A-L)
 - `npm start` -> Booted (verified listener on port 3000 during smoke startup window)
+- Vercel/Linux compatibility check -> PASS (no direct `@next/swc-*` entries in workspace manifests)
 
 ## Open Bugs
 
