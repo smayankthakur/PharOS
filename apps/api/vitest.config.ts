@@ -19,6 +19,7 @@ export default defineConfig({
       SYSTEM_OWNER_KEY:
         process.env.SYSTEM_OWNER_KEY ?? 'test_system_owner_key_for_vitest_32_chars',
       SYSTEM_ADMIN_EMAILS: process.env.SYSTEM_ADMIN_EMAILS ?? 'owner@shakti.test',
+      SEED_USER_PASSWORD: process.env.SEED_USER_PASSWORD ?? 'Admin@12345',
     },
   },
 });

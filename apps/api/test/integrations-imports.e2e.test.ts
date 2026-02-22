@@ -31,8 +31,13 @@ describe('Phase 6 Step 1 - Integrations V1', () => {
   let sku777Id = '';
   let whDelhiId = '';
 
-  const login = async (email: string): Promise<string> => {
-    const response = await request(app.getHttpServer()).post('/auth/login').send({
+  const inferTenantSlug = (email: string): string =>
+    email.endsWith('@vikram.test') ? 'vikram' : 'shakti';
+
+  const login = async (email: string, tenantSlug = inferTenantSlug(email)): Promise<string> => {
+    const response = await request(app.getHttpServer()).post('/auth/login')
+      .set('x-tenant', tenantSlug)
+      .send({
       email,
       password: 'Admin@12345',
     });
@@ -222,3 +227,4 @@ describe('Phase 6 Step 1 - Integrations V1', () => {
     expect(importCount).toBe(1);
   });
 });
+

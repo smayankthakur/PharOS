@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS import_jobs (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   type text NOT NULL CHECK (type IN ('dealer_sales', 'inventory_movements', 'competitor_snapshots')),
   status text NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'processing', 'success', 'partial', 'failed')),
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS import_jobs (
 );
 
 CREATE TABLE IF NOT EXISTS import_rows (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   import_job_id uuid NOT NULL REFERENCES import_jobs(id) ON DELETE CASCADE,
   row_number int NOT NULL,
@@ -33,7 +33,7 @@ CREATE INDEX IF NOT EXISTS idx_import_jobs_tenant_created
   ON import_jobs(tenant_id, created_at DESC);
 
 CREATE TABLE IF NOT EXISTS integration_accounts (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   provider text NOT NULL CHECK (provider IN ('shopify', 'woocommerce')),
   status text NOT NULL DEFAULT 'active',
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS integration_accounts (
 );
 
 CREATE TABLE IF NOT EXISTS webhook_events (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   provider text NOT NULL CHECK (provider IN ('shopify', 'woocommerce')),
   event_type text NOT NULL,

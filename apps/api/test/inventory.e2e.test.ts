@@ -25,8 +25,13 @@ describe('Inventory + Warehouse', () => {
   let salesToken = '';
   let viewerToken = '';
 
-  const login = async (email: string): Promise<string> => {
-    const response = await request(app.getHttpServer()).post('/auth/login').send({
+  const inferTenantSlug = (email: string): string =>
+    email.endsWith('@vikram.test') ? 'vikram' : 'shakti';
+
+  const login = async (email: string, tenantSlug = inferTenantSlug(email)): Promise<string> => {
+    const response = await request(app.getHttpServer()).post('/auth/login')
+      .set('x-tenant', tenantSlug)
+      .send({
       email,
       password: 'Admin@12345',
     });
@@ -148,3 +153,4 @@ describe('Inventory + Warehouse', () => {
     expect(negativeAttempt.body.error.code).toBe('bad_request');
   });
 });
+

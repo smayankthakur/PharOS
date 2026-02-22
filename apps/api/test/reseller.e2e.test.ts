@@ -14,9 +14,26 @@ describe('Reseller layer', () => {
   let tenantAOwnerToken = '';
   let tenantAId = '';
   let tenantBId = '';
+  const inferTenantSlug = (email: string): string => {
+    const domain = email.split('@')[1]?.toLowerCase() ?? '';
+    if (domain.startsWith('reseller-')) {
+      return 'system';
+    }
+    if (domain.endsWith('.test')) {
+      return domain.replace('.test', '');
+    }
+    return 'shakti';
+  };
 
-  const login = async (email: string, password = 'Admin@12345'): Promise<string> => {
-    const response = await request(app.getHttpServer()).post('/auth/login').send({ email, password });
+  const login = async (
+    email: string,
+    password = 'Admin@12345',
+    tenantSlug = inferTenantSlug(email),
+  ): Promise<string> => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/login')
+      .set('x-tenant', tenantSlug)
+      .send({ email, password });
     expect(response.status).toBe(201);
     return response.body.accessToken as string;
   };
@@ -78,8 +95,8 @@ describe('Reseller layer', () => {
     expect(addUserA.status).toBe(201);
     expect(addUserB.status).toBe(201);
 
-    resellerAToken = await login('admin@reseller-a.test');
-    resellerBToken = await login('admin@reseller-b.test');
+    resellerAToken = await login('admin@reseller-a.test', 'Admin@12345', 'system');
+    resellerBToken = await login('admin@reseller-b.test', 'Admin@12345', 'system');
 
     const provisionA = await request(app.getHttpServer())
       .post('/reseller/tenants')

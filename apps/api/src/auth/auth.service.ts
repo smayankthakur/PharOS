@@ -23,6 +23,12 @@ type UserRow = {
   status: string;
 };
 
+type TenantRow = {
+  id: string;
+  slug: string;
+  status: string;
+};
+
 type RoleRow = {
   id: string;
   name: string;
@@ -57,21 +63,45 @@ export class AuthService {
     this.jwtAudience = config.jwtAudience;
   }
 
-  async login(email: string, password: string): Promise<{ accessToken: string }> {
+  async login(email: string, password: string, tenantSlug: string): Promise<{ accessToken: string }> {
     const normalizedEmail = email.trim().toLowerCase();
-    if (!normalizedEmail || !password) {
-      throw new BadRequestException('Email and password are required');
+    const normalizedTenantSlug = tenantSlug.trim().toLowerCase();
+    if (!normalizedEmail || !password || !normalizedTenantSlug) {
+      throw new BadRequestException('Email, password, and tenant are required');
+    }
+
+    const isSystemTenant = normalizedTenantSlug === 'system';
+    let tenant: TenantRow | null = null;
+    if (!isSystemTenant) {
+      const tenantResult = await this.databaseService.query<TenantRow>(
+        `
+        SELECT id, slug, status
+        FROM tenants
+        WHERE slug = $1
+        LIMIT 1
+        `,
+        [normalizedTenantSlug],
+      );
+      tenant = tenantResult.rows[0] ?? null;
+      if (!tenant || tenant.status !== 'active') {
+        throw new UnauthorizedException('Invalid tenant');
+      }
     }
 
     const userResult = await this.databaseService.query<UserRow>(
       `
       SELECT id, tenant_id, name, email, password_hash, status
       FROM users
-      WHERE lower(email) = $1
+      WHERE (
+        ($1::boolean = true AND tenant_id IS NULL)
+        OR
+        ($1::boolean = false AND tenant_id = $2::uuid)
+      )
+      AND lower(email) = $3
       ORDER BY created_at ASC
       LIMIT 1
       `,
-      [normalizedEmail],
+      [isSystemTenant, tenant?.id ?? null, normalizedEmail],
     );
 
     const user = userResult.rows[0];
@@ -87,6 +117,7 @@ export class AuthService {
     const claims: JwtClaims = {
       sub: user.id,
       tenantId: user.tenant_id,
+      tenantSlug: isSystemTenant ? 'system' : tenant?.slug ?? null,
       email: user.email,
       name: user.name,
     };
@@ -122,6 +153,7 @@ export class AuthService {
       return {
         userId: payload.sub,
         tenantId: payload.tenantId,
+        tenantSlug: payload.tenantSlug ?? null,
         email: payload.email,
         name: payload.name,
       };

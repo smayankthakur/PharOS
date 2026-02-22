@@ -46,6 +46,7 @@ cp .env.example .env
 4. DB reset + migrate + seed:
 
 ```bash
+set SEED_USER_PASSWORD=your_dev_password
 npm run db:reset
 ```
 
@@ -77,7 +78,9 @@ Open: `http://shakti.pharos.local:3000`
 
 ## Demo credentials
 
-All seeded users use password `Admin@12345`.
+Seeded user password comes from `SEED_USER_PASSWORD` at seed time.
+If `SEED_USER_PASSWORD` is not set, `packages/db/seed.ts` generates a dev-only password
+and prints it to the console after seeding.
 
 - Shakti tenant:
   - `owner@shakti.test`
@@ -92,7 +95,7 @@ All seeded users use password `Admin@12345`.
 
 System owner key for tenant provisioning:
 - Header: `x-system-owner-key`
-- Value (local example): `dev_local_system_owner_key_at_least_32_chars`
+- Value: use a strong random value from `.env` (`SYSTEM_OWNER_KEY`).
 
 System admin emails (for reseller layer):
 - Env: `SYSTEM_ADMIN_EMAILS=owner@shakti.test`

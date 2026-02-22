@@ -13,12 +13,21 @@ describe('API smoke', () => {
   let vikramTenantId = '';
   const systemOwnerKey =
     process.env.SYSTEM_OWNER_KEY ?? 'test_system_owner_key_for_vitest_32_chars';
+  const inferTenantSlug = (email: string): string =>
+    email.endsWith('@vikram.test') ? 'vikram' : 'shakti';
 
-  const login = async (email: string, password: string): Promise<string> => {
-    const response = await request(app.getHttpServer()).post('/auth/login').send({
-      email,
-      password,
-    });
+  const login = async (
+    email: string,
+    password: string,
+    tenantSlug = inferTenantSlug(email),
+  ): Promise<string> => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/login')
+      .set('x-tenant', tenantSlug)
+      .send({
+        email,
+        password,
+      });
 
     expect(response.status).toBe(201);
     expect(typeof response.body.accessToken).toBe('string');

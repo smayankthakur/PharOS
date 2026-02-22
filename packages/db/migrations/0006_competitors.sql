@@ -1,7 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS competitors (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   name text NOT NULL,
   website text,
@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS competitors (
 );
 
 CREATE TABLE IF NOT EXISTS competitor_items (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   competitor_id uuid NOT NULL REFERENCES competitors(id) ON DELETE CASCADE,
   sku_id uuid NOT NULL REFERENCES skus(id) ON DELETE CASCADE,
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS competitor_items (
 );
 
 CREATE TABLE IF NOT EXISTS competitor_snapshots (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   competitor_item_id uuid NOT NULL REFERENCES competitor_items(id) ON DELETE CASCADE,
   price numeric(12, 2) NOT NULL,

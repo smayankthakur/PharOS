@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 
 const LoginPage = (): React.JSX.Element => {
   const router = useRouter();
-  const [email, setEmail] = useState('owner@shakti.test');
-  const [password, setPassword] = useState('Admin@12345');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 

@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   Inject,
   Post,
   Req,
@@ -35,12 +36,18 @@ export class AuthController {
   ) {}
 
   @Post('auth/login')
-  async login(@Body() body: LoginBody): Promise<{ accessToken: string }> {
+  async login(
+    @Headers('x-tenant') tenantSlug: string | undefined,
+    @Body() body: LoginBody,
+  ): Promise<{ accessToken: string }> {
     if (typeof body.email !== 'string' || typeof body.password !== 'string') {
       throw new BadRequestException('Email and password are required');
     }
+    if (!tenantSlug || !tenantSlug.trim()) {
+      throw new BadRequestException('x-tenant header is required');
+    }
 
-    return this.authService.login(body.email, body.password);
+    return this.authService.login(body.email, body.password, tenantSlug);
   }
 
   @Post('auth/users')

@@ -22,7 +22,7 @@ const ResellerPage = (): React.JSX.Element => {
     tenant_slug: '',
     owner_name: '',
     owner_email: '',
-    owner_password: 'Admin@12345',
+    owner_password: '',
   });
 
   const load = async (): Promise<void> => {

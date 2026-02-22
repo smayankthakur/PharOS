@@ -11,12 +11,17 @@ describe('SKU core', () => {
   let ownerToken = '';
   let salesToken = '';
   let opsToken = '';
+  const inferTenantSlug = (email: string): string =>
+    email.endsWith('@vikram.test') ? 'vikram' : 'shakti';
 
-  const login = async (email: string): Promise<string> => {
-    const response = await request(app.getHttpServer()).post('/auth/login').send({
-      email,
-      password: 'Admin@12345',
-    });
+  const login = async (email: string, tenantSlug = inferTenantSlug(email)): Promise<string> => {
+    const response = await request(app.getHttpServer())
+      .post('/auth/login')
+      .set('x-tenant', tenantSlug)
+      .send({
+        email,
+        password: 'Admin@12345',
+      });
 
     expect(response.status).toBe(201);
     return response.body.accessToken as string;

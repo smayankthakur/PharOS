@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS rule_definitions (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   code text NOT NULL,
   name text NOT NULL,

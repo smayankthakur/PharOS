@@ -22,8 +22,13 @@ describe('Rules Engine v1', () => {
   let salesToken = '';
   let viewerToken = '';
 
-  const login = async (email: string): Promise<string> => {
-    const response = await request(app.getHttpServer()).post('/auth/login').send({
+  const inferTenantSlug = (email: string): string =>
+    email.endsWith('@vikram.test') ? 'vikram' : 'shakti';
+
+  const login = async (email: string, tenantSlug = inferTenantSlug(email)): Promise<string> => {
+    const response = await request(app.getHttpServer()).post('/auth/login')
+      .set('x-tenant', tenantSlug)
+      .send({
       email,
       password: 'Admin@12345',
     });
@@ -106,3 +111,4 @@ describe('Rules Engine v1', () => {
     expect(Array.isArray(response.body.items)).toBe(true);
   });
 });
+

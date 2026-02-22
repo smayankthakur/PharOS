@@ -5,7 +5,10 @@ const run = (command: string, cwd: string): void => {
   execSync(command, {
     cwd,
     stdio: 'inherit',
-    env: process.env,
+    env: {
+      ...process.env,
+      SEED_USER_PASSWORD: process.env.SEED_USER_PASSWORD ?? 'Admin@12345',
+    },
   });
 };
 

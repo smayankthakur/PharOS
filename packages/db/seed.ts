@@ -990,7 +990,12 @@ const seed = async (): Promise<void> => {
   }
 
   const pool = new Pool({ connectionString: databaseUrl });
-  const passwordHash = await bcrypt.hash('Admin@12345', 10);
+  const seedUserPassword = process.env.SEED_USER_PASSWORD?.trim();
+  const resolvedSeedPassword =
+    seedUserPassword && seedUserPassword.length >= 8
+      ? seedUserPassword
+      : `dev-${randomUUID().replace(/-/g, '').slice(0, 20)}`;
+  const passwordHash = await bcrypt.hash(resolvedSeedPassword, 10);
 
   const client = await pool.connect();
 
@@ -1036,6 +1041,7 @@ const seed = async (): Promise<void> => {
 
     await client.query('COMMIT');
     console.log('Seed complete');
+    console.log(`Seed credentials password (dev only): ${resolvedSeedPassword}`);
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;

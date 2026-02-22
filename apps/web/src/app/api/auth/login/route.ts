@@ -1,13 +1,18 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { apiBaseUrl } from '../../../../lib/tenant';
+import { apiBaseUrl, extractTenantSlugFromHost } from '../../../../lib/tenant';
 
 export const POST = async (request: NextRequest): Promise<NextResponse> => {
   const body = (await request.json()) as { email?: string; password?: string };
+  const host = request.headers.get('host');
+  const tenantSlug = extractTenantSlugFromHost(host) ?? 'system';
 
   const response = await fetch(`${apiBaseUrl()}/auth/login`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json' },
+    headers: {
+      'content-type': 'application/json',
+      'x-tenant': tenantSlug,
+    },
     body: JSON.stringify(body),
     cache: 'no-store',
   });

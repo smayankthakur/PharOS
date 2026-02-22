@@ -13,7 +13,7 @@ ALTER TABLE webhook_events
   CHECK (provider IN ('shopify', 'woocommerce', 'generic_rest'));
 
 CREATE TABLE IF NOT EXISTS sync_runs (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   provider text NOT NULL CHECK (provider IN ('shopify', 'woocommerce', 'generic_rest')),
   resource text NOT NULL,

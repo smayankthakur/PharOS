@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS rules (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   rule_code text NOT NULL,
   name text NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS rules (
 );
 
 CREATE TABLE IF NOT EXISTS rule_runs (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   started_at timestamptz NOT NULL DEFAULT now(),
   completed_at timestamptz,
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS rule_runs (
 );
 
 CREATE TABLE IF NOT EXISTS alerts (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   rule_id uuid NOT NULL REFERENCES rules(id) ON DELETE CASCADE,
   rule_code text NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS alerts (
 );
 
 CREATE TABLE IF NOT EXISTS alert_evidence (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   alert_id uuid NOT NULL REFERENCES alerts(id) ON DELETE CASCADE,
   evidence_type text NOT NULL,

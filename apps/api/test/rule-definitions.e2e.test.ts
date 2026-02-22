@@ -21,8 +21,13 @@ describe('Rule definitions store', () => {
   let vikramOwnerToken = '';
   let shaktiRuleId = '';
 
-  const login = async (email: string): Promise<string> => {
-    const response = await request(app.getHttpServer()).post('/auth/login').send({
+  const inferTenantSlug = (email: string): string =>
+    email.endsWith('@vikram.test') ? 'vikram' : 'shakti';
+
+  const login = async (email: string, tenantSlug = inferTenantSlug(email)): Promise<string> => {
+    const response = await request(app.getHttpServer()).post('/auth/login')
+      .set('x-tenant', tenantSlug)
+      .send({
       email,
       password: 'Admin@12345',
     });
@@ -110,3 +115,4 @@ describe('Rule definitions store', () => {
     expect(response.status).toBe(404);
   });
 });
+

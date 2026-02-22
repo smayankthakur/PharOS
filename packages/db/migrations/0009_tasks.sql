@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS tasks (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   alert_id uuid NOT NULL REFERENCES alerts(id) ON DELETE CASCADE,
   title text NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS tasks (
 );
 
 CREATE TABLE IF NOT EXISTS task_history (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   task_id uuid NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
   actor_user_id uuid NULL REFERENCES users(id) ON DELETE SET NULL,
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS task_history (
 );
 
 CREATE TABLE IF NOT EXISTS task_comments (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id uuid NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
   task_id uuid NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
   actor_user_id uuid NULL REFERENCES users(id) ON DELETE SET NULL,
