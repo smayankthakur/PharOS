@@ -2,6 +2,7 @@ import 'dotenv/config';
 import 'reflect-metadata';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
+import jwt from 'jsonwebtoken';
 import { NestFactory } from '@nestjs/core';
 import type { INestApplication } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
@@ -18,11 +19,14 @@ describe('Auth tenant scoping', () => {
     email: string,
     password: string,
     tenantSlug: string,
+    mode: 'header' | 'body' = 'header',
   ): Promise<request.Response> =>
-    request(app.getHttpServer())
-      .post('/auth/login')
-      .set('x-tenant', tenantSlug)
-      .send({ email, password });
+    mode === 'header'
+      ? request(app.getHttpServer())
+          .post('/auth/login')
+          .set('x-tenant', tenantSlug)
+          .send({ email, password })
+      : request(app.getHttpServer()).post('/auth/login').send({ email, password, tenantSlug });
 
   beforeAll(async () => {
     app = await NestFactory.create(AppModule);
@@ -64,13 +68,18 @@ describe('Auth tenant scoping', () => {
       });
     expect(createVikramUser.status).toBe(201);
 
-    const shaktiLogin = await login(sharedEmail, shaktiPassword, 'shakti');
+    const shaktiLogin = await login(sharedEmail, shaktiPassword, 'shakti', 'body');
     expect(shaktiLogin.status).toBe(201);
     expect(typeof shaktiLogin.body.accessToken).toBe('string');
+    const shaktiClaims = jwt.decode(shaktiLogin.body.accessToken) as { tenantId?: string };
+    expect(typeof shaktiClaims.tenantId).toBe('string');
 
     const vikramLogin = await login(sharedEmail, vikramPassword, 'vikram');
     expect(vikramLogin.status).toBe(201);
     expect(typeof vikramLogin.body.accessToken).toBe('string');
+    const vikramClaims = jwt.decode(vikramLogin.body.accessToken) as { tenantId?: string };
+    expect(typeof vikramClaims.tenantId).toBe('string');
+    expect(shaktiClaims.tenantId).not.toBe(vikramClaims.tenantId);
 
     const wrongTenantPassword = await login(sharedEmail, shaktiPassword, 'vikram');
     expect(wrongTenantPassword.status).toBe(401);

@@ -19,6 +19,7 @@ import type { Request } from 'express';
 type LoginBody = {
   email?: string;
   password?: string;
+  tenantSlug?: string;
 };
 
 type CreateUserBody = {
@@ -37,14 +38,15 @@ export class AuthController {
 
   @Post('auth/login')
   async login(
-    @Headers('x-tenant') tenantSlug: string | undefined,
+    @Headers('x-tenant') tenantHeader: string | undefined,
     @Body() body: LoginBody,
   ): Promise<{ accessToken: string }> {
     if (typeof body.email !== 'string' || typeof body.password !== 'string') {
       throw new BadRequestException('Email and password are required');
     }
-    if (!tenantSlug || !tenantSlug.trim()) {
-      throw new BadRequestException('x-tenant header is required');
+    const tenantSlug = tenantHeader?.trim() || body.tenantSlug?.trim();
+    if (!tenantSlug) {
+      throw new BadRequestException('Tenant slug is required via x-tenant header or tenantSlug body');
     }
 
     return this.authService.login(body.email, body.password, tenantSlug);
