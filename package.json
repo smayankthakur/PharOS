@@ -37,7 +37,10 @@
     "migrate:deploy": "npm run migrate",
     "seed": "ts-node packages/db/seed.ts",
     "db:reset": "ts-node packages/db/reset.ts && ts-node packages/db/migrate.ts && ts-node packages/db/seed.ts",
-    "healthcheck": "node scripts/healthcheck.mjs"
+    "healthcheck": "node scripts/healthcheck.mjs",
+    "render:build:api": "npm run build:api",
+    "render:migrate": "npm run migrate",
+    "render:start:api": "npm run start --workspace @pharos/api"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.15.0",
