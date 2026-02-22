@@ -24,7 +24,7 @@ const bootstrap = async (): Promise<void> => {
 
   app.enableShutdownHooks();
 
-  const allowedOrigins = config.allowedOrigins;
+  const allowedOrigins: string[] = config.allowedOrigins;
   const corsDelegate: CorsOptionsDelegate<Request> = (req, callback) => {
     const requestOrigin = req.header('origin');
 
@@ -41,7 +41,9 @@ const bootstrap = async (): Promise<void> => {
       return;
     }
 
-    const allowed = allowedOrigins.some((pattern) => matchesWildcardOrigin(requestOrigin, pattern));
+    const allowed = allowedOrigins.some((pattern: string) =>
+      matchesWildcardOrigin(requestOrigin, pattern),
+    );
     if (!allowed) {
       callback(new Error('CORS origin denied'), {
         origin: false,
