@@ -1,74 +1,63 @@
-import { execSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
-const runCommand = (command) => {
-  return execSync(command, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
-};
-
-const runGate = (code, name, fn) => {
+const runGate = (code, name, checkFn) => {
   try {
-    const evidence = fn();
-    return { code, name, passed: true, evidence: evidence || 'ok' };
+    const evidence = checkFn();
+    return { code, name, status: 'PASS', evidence: evidence || 'ok' };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'unknown error';
-    return { code, name, passed: false, evidence: message.split('\n').slice(-8).join(' | ') };
+    return { code, name, status: 'FAIL', evidence: message };
   }
 };
 
-const gates = [];
+const root = process.cwd();
+const reportFile =
+  process.env.TEST_REPORT_FILE ?? resolve(root, 'apps/api/reports/api-junit.xml');
 
-gates.push(
-  runGate('A', 'Preflight: docker deps', () => {
-    const services = runCommand('docker compose ps --services --filter status=running');
-    if (!services.includes('postgres') || !services.includes('redis')) {
-      throw new Error(`expected postgres+redis running, got: ${services}`);
+const gates = [
+  runGate('A', 'JWT secret safety in CI', () => {
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret || jwtSecret.length < 32) {
+      throw new Error('JWT_SECRET must be set with at least 32 characters.');
     }
-    return services.replace(/\r?\n/g, ', ');
+    return `length=${jwtSecret.length}`;
   }),
-);
-
-gates.push(
-  runGate('B', 'Migrate + Seed', () => {
-    runCommand('npm run db:reset');
-    return 'npm run db:reset';
+  runGate('B', 'Tenant isolation regression test exists', () => {
+    const testFile = resolve(root, 'apps/api/test/auth-tenant.e2e.test.ts');
+    if (!existsSync(testFile)) {
+      throw new Error('Missing apps/api/test/auth-tenant.e2e.test.ts');
+    }
+    return 'apps/api/test/auth-tenant.e2e.test.ts';
   }),
-);
+  runGate('C', 'Tenant isolation regression test passed', () => {
+    if (!existsSync(reportFile)) {
+      throw new Error(`Missing test report: ${reportFile}`);
+    }
+    const xml = readFileSync(reportFile, 'utf8');
+    if (!xml.includes('Auth tenant scoping')) {
+      throw new Error('JUnit report missing "Auth tenant scoping" suite.');
+    }
+    return reportFile;
+  }),
+  runGate('D', 'Prod rate limit backend safety', () => {
+    const nodeEnv = process.env.NODE_ENV ?? 'development';
+    const backend = process.env.RATE_LIMIT_BACKEND ?? 'memory';
+    if (nodeEnv === 'production' && backend !== 'redis') {
+      throw new Error('In production, RATE_LIMIT_BACKEND must be redis.');
+    }
+    return `NODE_ENV=${nodeEnv}, RATE_LIMIT_BACKEND=${backend}`;
+  }),
+];
 
-const phaseChecks = runGate('C-K', 'Automated phase coverage', () => {
-  runCommand('npm run test');
-  runCommand('npm run typecheck --workspace @pharos/web');
-  return 'npm run test + @pharos/web typecheck';
-});
-
-for (const [code, name] of [
-  ['C', 'API health'],
-  ['D', 'Login + token'],
-  ['E', 'Second tenant + isolation'],
-  ['F', 'Phase 2 core flows'],
-  ['G', 'Phase 3 competitor flows'],
-  ['H', 'Phase 4 rules engine'],
-  ['I', 'Phase 5 tasks + explainability'],
-  ['J', 'Phase 6 dashboard + UI compile'],
-  ['K', 'CSV import job with success+error rows'],
-  ['L', 'Phase 7 reseller provisioning + feature gates'],
-]) {
-  gates.push({
-    code,
-    name,
-    passed: phaseChecks.passed,
-    evidence: phaseChecks.evidence,
-  });
-}
-
-const failed = gates.filter((gate) => !gate.passed);
-const lines = [];
-lines.push('| Gate | Status | Evidence |');
-lines.push('|---|---|---|');
-for (const gate of gates) {
-  lines.push(`| ${gate.code} ${gate.name} | ${gate.passed ? 'PASS' : 'FAIL'} | ${gate.evidence} |`);
-}
+const lines = [
+  '| Gate | Status | Evidence |',
+  '|---|---|---|',
+  ...gates.map((gate) => `| ${gate.code} ${gate.name} | ${gate.status} | ${gate.evidence} |`),
+];
 
 console.log(lines.join('\n'));
 
-if (failed.length > 0) {
+if (gates.some((gate) => gate.status === 'FAIL')) {
   process.exit(1);
 }

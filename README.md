@@ -79,8 +79,8 @@ Open: `http://shakti.pharos.local:3000`
 ## Demo credentials
 
 Seeded user password comes from `SEED_USER_PASSWORD` at seed time.
-If `SEED_USER_PASSWORD` is not set, `packages/db/seed.ts` generates a dev-only password
-and prints it to the console after seeding.
+If `SEED_USER_PASSWORD` is not set, `packages/db/seed.ts` generates a dev-only password.
+For safety, the generated value is not printed in CI logs.
 
 - Shakti tenant:
   - `owner@shakti.test`
@@ -154,6 +154,23 @@ npm run test
 npm run check:lock-platform
 ```
 
+- CI-equivalent local run (with Postgres + Redis running):
+
+```bash
+set DATABASE_URL=postgresql://pharos:pharos@localhost:5432/pharos
+set REDIS_URL=redis://localhost:6379
+set JWT_SECRET=replace_with_min_32_chars_secret
+set SYSTEM_OWNER_KEY=replace_with_min_32_chars_secret
+set SYSTEM_ADMIN_EMAILS=owner@shakti.test
+set RATE_LIMIT_BACKEND=redis
+set RATE_LIMIT_WINDOW_SEC=60
+npm run db:migrate
+npm run db:seed:test
+npm run test:api:ci
+npm run build --workspace @pharos/web
+npm run gates
+```
+
 - End-to-end gate table:
 
 ```bash
@@ -165,6 +182,27 @@ npm run gates
 ```bash
 npm run smoke
 ```
+
+## Branch protection
+
+Configure branch protection on `main` and require these checks:
+
+- `quality`
+- `test_api`
+- `test_web`
+- `security`
+- `codeql`
+- `build`
+- `gates`
+
+Do not allow merging if any required check is failing.
+
+## Secret rotation checklist
+
+- Rotate `JWT_SECRET` and `SYSTEM_OWNER_KEY` every environment bootstrap.
+- Never commit `.env` files or runtime logs.
+- Update GitHub/Render/Vercel secrets before deploying.
+- Invalidate old tokens after key rotation.
 
 ## Production entrypoints
 
