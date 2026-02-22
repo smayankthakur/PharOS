@@ -1,5 +1,16 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 /** @type {import('next').NextConfig} */
 const isDev = process.env.NODE_ENV !== 'production';
+const workspaceRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../');
+const apiConnectSources = [
+  process.env.API_URL,
+  process.env.NEXT_PUBLIC_API_URL,
+  'http://localhost:4000',
+  'http://pharos.local:4000',
+  'http://*.pharos.local:4000',
+].filter((value, index, arr) => Boolean(value) && arr.indexOf(value) === index);
 
 const csp = [
   "default-src 'self'",
@@ -12,10 +23,12 @@ const csp = [
     : "script-src 'self'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https:",
-  "connect-src 'self' http://localhost:4000 http://pharos.local:4000 http://*.pharos.local:4000",
+  `connect-src 'self' ${apiConnectSources.join(' ')}`,
 ].join('; ');
 
 const nextConfig = {
+  output: 'standalone',
+  outputFileTracingRoot: workspaceRoot,
   eslint: {
     ignoreDuringBuilds: true,
   },

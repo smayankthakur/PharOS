@@ -24,16 +24,23 @@ export const extractTenantSlugFromHost = (hostHeader: string | null): string | n
   }
 
   const host = hostHeader.split(':')[0]?.toLowerCase() ?? '';
+  const hostSuffix = (
+    process.env.TENANT_HOST_SUFFIX ??
+    process.env.NEXT_PUBLIC_TENANT_HOST_SUFFIX ??
+    'pharos.local'
+  )
+    .trim()
+    .toLowerCase();
 
-  if (!host || host === 'localhost' || host === '127.0.0.1' || host === 'pharos.local') {
+  if (!host || host === 'localhost' || host === '127.0.0.1' || host === hostSuffix) {
     return null;
   }
 
-  if (!host.endsWith('.pharos.local')) {
+  if (!host.endsWith(`.${hostSuffix}`)) {
     return null;
   }
 
-  const slug = host.replace('.pharos.local', '').trim();
+  const slug = host.slice(0, -(`.${hostSuffix}`).length).trim();
   if (!slug || slug === 'pharos') {
     return null;
   }

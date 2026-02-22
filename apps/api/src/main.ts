@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
+import type { CorsOptionsDelegate } from '@nestjs/common/interfaces/external/cors-options.interface';
+import type { Request } from 'express';
 import { AppModule } from './app.module';
 import { loadConfig } from '@pharos/config';
 import { AppLoggerService } from './logger/app-logger.service';
@@ -18,31 +20,39 @@ const matchesWildcardOrigin = (origin: string, pattern: string): boolean => {
 const bootstrap = async (): Promise<void> => {
   const config = loadConfig();
   const app = await NestFactory.create(AppModule);
+  const isProduction = config.nodeEnv === 'production';
 
   app.enableShutdownHooks();
 
   const allowedOrigins = config.allowedOrigins;
+  const corsDelegate: CorsOptionsDelegate<Request> = (req, callback) => {
+    const requestOrigin = req.header('origin');
 
-  const corsOrigin = (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void): void => {
-    if (!origin) {
-      callback(null, true);
+    if (!requestOrigin) {
+      const isHealthRoute = req.path === '/health';
+      if (!isProduction || isHealthRoute) {
+        callback(null, { credentials: true, origin: true });
+        return;
+      }
+
+      callback(new Error('CORS origin required in production'), {
+        origin: false,
+      });
       return;
     }
 
-    const allowed = allowedOrigins.some((pattern) => matchesWildcardOrigin(origin, pattern));
-
-    if (allowed) {
-      callback(null, true);
+    const allowed = allowedOrigins.some((pattern) => matchesWildcardOrigin(requestOrigin, pattern));
+    if (!allowed) {
+      callback(new Error('CORS origin denied'), {
+        origin: false,
+      });
       return;
     }
 
-    callback(new Error('CORS origin denied'));
+    callback(null, { credentials: true, origin: true });
   };
 
-  app.enableCors({
-    credentials: true,
-    origin: corsOrigin,
-  });
+  app.enableCors(corsDelegate);
 
   const logger = app.get(AppLoggerService);
   logger.info('api.bootstrap', { allowedOrigins });

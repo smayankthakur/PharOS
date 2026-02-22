@@ -35,7 +35,9 @@ jobs:
     env:
       DATABASE_URL: postgresql://pharos:pharos@localhost:5432/pharos
       REDIS_URL: redis://localhost:6379
-      JWT_SECRET: change_me
+      JWT_SECRET: ci_super_secret_for_pharos_32_chars_minimum
+      SYSTEM_OWNER_KEY: ci_system_owner_key_32_chars_minimum
+      SYSTEM_ADMIN_EMAILS: owner@shakti.test
       PORT: 4000
 
     steps:
@@ -45,11 +47,15 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20.11.1'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+        working-directory: pharos
+
+      - name: Validate lockfile platform safety
+        run: npm run check:lock-platform
         working-directory: pharos
 
       - name: Run migrations

@@ -64,6 +64,20 @@ export class RedisService implements OnModuleInit, OnModuleDestroy, BeforeApplic
     return this.isHealthy ? 'connected' : 'disconnected';
   }
 
+  async evalLua<T>(script: string, keys: string[], args: string[]): Promise<T | null> {
+    if (!this.client) {
+      return null;
+    }
+
+    try {
+      const result = await this.client.eval(script, keys.length, ...keys, ...args);
+      return result as T;
+    } catch {
+      this.isHealthy = false;
+      return null;
+    }
+  }
+
   private async closeClient(): Promise<void> {
     if (this.isClosed) {
       return;

@@ -12,6 +12,7 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
+import { timingSafeEqual } from 'crypto';
 import type { Request } from 'express';
 import { loadConfig } from '@pharos/config';
 import { AuthenticatedGuard } from '../rbac/authenticated.guard';
@@ -136,7 +137,16 @@ export class TenantsController {
   }
 
   private assertSystemOwner(systemOwnerKey: string | undefined): void {
-    if (!this.systemOwnerKey || systemOwnerKey !== this.systemOwnerKey) {
+    if (!this.systemOwnerKey || !systemOwnerKey) {
+      throw new UnauthorizedException('Invalid system owner key');
+    }
+
+    const expected = Buffer.from(this.systemOwnerKey);
+    const provided = Buffer.from(systemOwnerKey);
+    const matches =
+      provided.length === expected.length && timingSafeEqual(expected, provided);
+
+    if (!matches) {
       throw new UnauthorizedException('Invalid system owner key');
     }
   }

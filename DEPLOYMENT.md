@@ -1,70 +1,208 @@
-# Deployment Checklist
+# PharOS Deployment Baseline
 
-## Target services
-- Web: Vercel
-- API: Render or Fly.io
-- PostgreSQL: Neon or Supabase
-- Redis: Upstash
+This runbook standardizes one production topology across Vercel, Render, Railway, Fly.io, and VPS Docker.
 
-## Vercel (Web) setup
+## Architecture
 
-Use one Vercel project for the web app with:
+```text
+Browser
+  -> web (Next.js, tenant subdomain aware)
+      -> api (NestJS, JWT + RBAC + tenant isolation)
+          -> Postgres (managed: Neon/Supabase/Railway)
+          -> Redis (managed: Upstash/Render/Railway, optional for API in dev only)
+  -> worker (BullMQ consumer, same DB + Redis as api)
+```
 
-- Root Directory: `apps/web`
-- Framework Preset: `Next.js`
-- Install Command: `npm install`
-- Build Command: `npm run build`
-- Output Directory: `.next` (default)
+## Service Matrix
 
-Important:
-- Do not pin platform-specific SWC packages (for example `@next/swc-win32-*`) in `apps/web/package.json`.
-- Keep API hosted separately (Render/Fly/Railway) and point web to it via env vars.
+| Service | Path | Build Command | Start Command | Port | Health | Required Env |
+|---|---|---|---|---|---|---|
+| Web | `apps/web` | `npm run build:web` | `npm run start:web` | `3000` | `GET /` | `API_URL`, `NEXT_PUBLIC_API_URL`, `TENANT_HOST_SUFFIX` |
+| API | `apps/api` | `npm run build:api` | `npm run start:api` | `4000` (or `3001` in containers) | `GET /health` | `DATABASE_URL`, `JWT_SECRET`, `SYSTEM_OWNER_KEY`, `SYSTEM_ADMIN_EMAILS`, `ALLOWED_ORIGINS` |
+| Worker | `apps/worker` | `npm run build:worker` | `npm run start:worker` | n/a | queue heartbeat/logs | `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, `SYSTEM_OWNER_KEY` |
+| DB migrations | `packages/db` | n/a | `npm run migrate:deploy` | n/a | migration logs | `DATABASE_URL` |
 
-## Required environment variables
+## Environment Variables
 
-### Web
-- `API_URL`
-- `NEXT_PUBLIC_API_URL` (optional fallback)
-- `NODE_ENV`
+| Variable | Required | Example | Notes |
+|---|---|---|---|
+| `DATABASE_URL` | Yes | `postgresql://...` | Required in all environments |
+| `REDIS_URL` | Worker: Yes, API: Recommended | `rediss://...` | API falls back to in-memory in local/dev only |
+| `JWT_SECRET` | Yes | `32+ chars` | Rejected if weak/default |
+| `JWT_ISSUER` | Optional | `pharos-api` | Enforced if set |
+| `JWT_AUDIENCE` | Optional | `pharos-app` | Enforced if set |
+| `SYSTEM_OWNER_KEY` | Yes | `32+ chars` | Used for system-owner endpoints |
+| `SYSTEM_ADMIN_EMAILS` | Yes in prod | `owner@company.com` | Comma-separated |
+| `ALLOWED_ORIGINS` | Yes | `https://app.example.com,https://*.app.example.com` | CORS allowlist |
+| `PORT` | Optional | `4000` | API listen port |
+| `RATE_LIMIT_WINDOW_MS` | Optional | `60000` | API limiter window |
+| `RATE_LIMIT_MAX` | Optional | `120` | API limiter base |
+| `RATE_LIMIT_LOGIN_MAX` | Optional | `10` | Stricter for login |
+| `RATE_LIMIT_SYSTEM_MAX` | Optional | `30` | Stricter for system-owner tenant ops |
+| `API_URL` | Web required | `https://api.example.com` | Server-side web API base |
+| `NEXT_PUBLIC_API_URL` | Web required | `https://api.example.com` | Client-side web API base |
+| `TENANT_HOST_SUFFIX` | Web required | `app.example.com` | Host suffix used for tenant slug extraction |
+| `NEXT_PUBLIC_TENANT_HOST_SUFFIX` | Recommended | `app.example.com` | Mirror for client/runtime consistency |
+| `BASE_DOMAIN` | Optional | `example.com` | Docs/ops convenience |
 
-### API
-- `DATABASE_URL`
-- `REDIS_URL` (optional for API-only mode; required for queue/worker features)
-- `JWT_SECRET`
-- `PORT`
-- `RATE_LIMIT_WINDOW_MS`
-- `RATE_LIMIT_MAX`
-- `ALLOWED_ORIGINS`
-- `SYSTEM_OWNER_KEY`
-- `SYSTEM_ADMIN_EMAILS`
+## Deterministic Migrations
 
-### Worker
-- `REDIS_URL`
-- `DATABASE_URL`
+- Production migration command: `npm run migrate:deploy`
+- Current implementation uses SQL migrations in `packages/db/migrations`.
+- Run migrations before deploying a new API or worker release.
+- Do not run seed in production except explicit demo/staging environments.
 
-## DNS and tenant subdomains
-- App base domain should support wildcard tenant subdomains.
-- Example:
-  - `pharos.app` for landing/root
-  - `*.pharos.app` for tenant routing
-- Keep API domain separate if needed (e.g., `api.pharos.app`) and include it in allowed origins.
+## Secrets Handling
 
-## Pre-deploy checklist
-0. Use `.env.production.example` as baseline.
-1. Run migrations: `npm run migrate`
-2. Seed demo tenant (if needed): `npm run seed`
-3. Verify CI green (lint + typecheck + test)
-4. Verify CORS origins are exact for production domains
-5. Verify JWT secret is rotated and strong
-6. Verify rate-limit defaults are production-safe
-7. Build images as needed:
-   - `docker build -t pharos-api --build-arg WORKSPACE=@pharos/api .`
-   - `docker build -t pharos-web --build-arg WORKSPACE=@pharos/web .`
-   - `docker build -t pharos-worker --build-arg WORKSPACE=@pharos/worker .`
+- Store secrets in platform secret manager only.
+- Never commit `.env.production`.
+- Rotate `JWT_SECRET` and `SYSTEM_OWNER_KEY` on initial production rollout.
 
-## Smoke tests after deploy
-1. `GET /health` returns connected db + redis
-2. Login with seeded user works
-3. Tenant branding loads on tenant subdomain
-4. Demo mode toggle works via settings page (`/settings`)
-5. Dashboard loads on Vercel URL without hydration/runtime errors
+## Tenant Wildcard DNS + SSL
+
+### Desired domains
+- Web root: `app.example.com`
+- Tenant wildcard: `*.app.example.com`
+- API: `api.example.com`
+
+### DNS records
+- `app.example.com` -> provider target (Vercel)
+- `*.app.example.com` -> same Vercel target (wildcard)
+- `api.example.com` -> API provider target (Render/Railway/Fly)
+
+### SSL
+- Use managed SSL on hosting providers for root + wildcard.
+- Ensure wildcard certificate covers `*.app.example.com`.
+
+## Platform Runbooks
+
+### 1) Vercel (Web)
+
+1. Create project from this repo.
+2. Set `Root Directory` to `apps/web`.
+3. Set `Node.js Version` to `20.x`.
+4. Build command: `npm run build`.
+5. Install command: `npm ci`.
+6. Add env vars:
+   - `API_URL=https://api.example.com`
+   - `NEXT_PUBLIC_API_URL=https://api.example.com`
+   - `TENANT_HOST_SUFFIX=app.example.com`
+   - `NEXT_PUBLIC_TENANT_HOST_SUFFIX=app.example.com`
+7. Add domains:
+   - `app.example.com`
+   - `*.app.example.com`
+8. Deploy and verify tenant subdomain routing.
+
+### 2) Render (API + Worker)
+
+Create two services from same repo.
+
+API Web Service:
+- Root Directory: `pharos`
+- Build Command: `npm ci && npm run build:api`
+- Start Command: `npm run start:api`
+- Health Check Path: `/health`
+- Port: `3001` (set `PORT=3001`)
+
+Worker Background Service:
+- Root Directory: `pharos`
+- Build Command: `npm ci && npm run build:worker`
+- Start Command: `npm run start:worker`
+
+Shared env vars:
+- `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, `SYSTEM_OWNER_KEY`, `SYSTEM_ADMIN_EMAILS`
+- API-only: `ALLOWED_ORIGINS`, `PORT`, rate-limit vars
+
+Migrations:
+- Use API pre-deploy command: `npm ci && npm run migrate:deploy`
+
+### 3) Railway (API + Worker + optional Web)
+
+1. Create project.
+2. Add services:
+   - `api` (from repo)
+   - `worker` (from repo)
+   - Optional `web` (or keep web on Vercel)
+3. Add Postgres plugin.
+4. Add Redis plugin (recommended).
+5. Commands:
+   - API build: `npm ci && npm run build:api`
+   - API start: `npm run start:api`
+   - Worker build: `npm ci && npm run build:worker`
+   - Worker start: `npm run start:worker`
+6. Run migrations once per release:
+   - `npm ci && npm run migrate:deploy`
+7. Map domain:
+   - API -> `api.example.com`
+   - Optional web -> `app.example.com` + wildcard
+
+### 4) Fly.io (API + Worker)
+
+Use two Fly apps for simpler scaling.
+
+API:
+1. `fly launch --name pharos-api --no-deploy`
+2. Build with `Dockerfile.api`.
+3. Set secrets:
+   - `fly secrets set DATABASE_URL=... REDIS_URL=... JWT_SECRET=... SYSTEM_OWNER_KEY=... SYSTEM_ADMIN_EMAILS=... ALLOWED_ORIGINS=... PORT=3001`
+4. Health check path `/health`.
+
+Worker:
+1. `fly launch --name pharos-worker --no-deploy`
+2. Build with `Dockerfile.worker`.
+3. Set same shared secrets.
+4. No public port required.
+
+Migrations:
+- Run from CI/CD or one-off machine:
+  - `fly ssh console -a pharos-api -C "npm run migrate:deploy"`
+
+### 5) VPS Docker Compose (fallback)
+
+1. Copy `.env.production.example` to `.env`.
+2. Fill production secrets + external DB/Redis URLs.
+3. Build and run:
+   - `docker compose up -d --build`
+4. Run migrations:
+   - `docker compose exec api npm run migrate:deploy`
+5. Reverse proxy (Nginx/Caddy):
+   - `app.example.com` -> web `:3000`
+   - `api.example.com` -> api `:3001`
+6. TLS:
+   - Caddy recommended for automatic certificates.
+
+### 6) Optional AWS ECS Fargate (skeleton)
+
+- Create 3 task definitions (`web`, `api`, `worker`) from the three Dockerfiles.
+- Use one ALB target group for `web`, one for `api`.
+- Worker runs as non-LB service.
+- Secrets from AWS SSM Parameter Store / Secrets Manager.
+- RDS Postgres + ElastiCache Redis.
+
+## CORS / Auth posture for wildcard tenants
+
+- API expects Bearer token; web stores token in httpOnly cookie.
+- Configure `ALLOWED_ORIGINS` with exact root and wildcard web origins.
+- In production, API denies no-origin requests except health route.
+
+## Production Verification Checklist
+
+1. `npm ci`
+2. `npm run build:all`
+3. `npm run migrate:deploy`
+4. `npm run healthcheck` (with `API_HEALTH_URL`/`WEB_HEALTH_URL` if needed)
+5. Confirm:
+   - `/health` returns `200`
+   - login works
+   - dashboard loads
+   - tenant subdomain resolves (`tenant.app.example.com`)
+   - worker processes a queue job
+
+## Quickstart
+
+1. Provision managed Postgres and Redis.
+2. Set env vars (use `.env.production.example`).
+3. Deploy API + Worker.
+4. Deploy Web.
+5. Configure `app.example.com`, `*.app.example.com`, and `api.example.com`.
+6. Run smoke checks (`/health`, login, dashboard, tenant subdomain, worker job).

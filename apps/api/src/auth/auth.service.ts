@@ -40,6 +40,8 @@ export type CreateUserInput = z.input<typeof createUserSchema>;
 @Injectable()
 export class AuthService {
   private readonly jwtSecret: string;
+  private readonly jwtIssuer: string | null;
+  private readonly jwtAudience: string | null;
 
   constructor(
     @Inject(DatabaseService)
@@ -51,6 +53,8 @@ export class AuthService {
   ) {
     const config = loadConfig();
     this.jwtSecret = config.jwtSecret;
+    this.jwtIssuer = config.jwtIssuer;
+    this.jwtAudience = config.jwtAudience;
   }
 
   async login(email: string, password: string): Promise<{ accessToken: string }> {
@@ -88,6 +92,9 @@ export class AuthService {
     };
 
     const accessToken = jwt.sign(claims, this.jwtSecret, {
+      algorithm: 'HS256',
+      ...(this.jwtIssuer ? { issuer: this.jwtIssuer } : {}),
+      ...(this.jwtAudience ? { audience: this.jwtAudience } : {}),
       expiresIn: '12h',
     });
 
@@ -107,7 +114,11 @@ export class AuthService {
 
   verifyToken(token: string): AuthenticatedUser {
     try {
-      const payload = jwt.verify(token, this.jwtSecret) as JwtClaims;
+      const payload = jwt.verify(token, this.jwtSecret, {
+        algorithms: ['HS256'],
+        ...(this.jwtIssuer ? { issuer: this.jwtIssuer } : {}),
+        ...(this.jwtAudience ? { audience: this.jwtAudience } : {}),
+      }) as JwtClaims;
       return {
         userId: payload.sub,
         tenantId: payload.tenantId,

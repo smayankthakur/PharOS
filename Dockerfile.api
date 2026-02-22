@@ -1,0 +1,29 @@
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+COPY package*.json ./
+COPY apps/api/package*.json apps/api/
+COPY packages/config/package*.json packages/config/
+COPY packages/types/package*.json packages/types/
+
+RUN npm ci
+
+FROM deps AS build
+WORKDIR /app
+COPY . .
+RUN npm run build:api
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PORT=3001
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=build /app/apps/api/dist ./apps/api/dist
+COPY --from=build /app/packages/config ./packages/config
+COPY --from=build /app/packages/types ./packages/types
+COPY package*.json ./
+
+EXPOSE 3001
+
+CMD ["node", "apps/api/dist/main.js"]

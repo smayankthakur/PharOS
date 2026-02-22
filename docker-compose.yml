@@ -1,5 +1,84 @@
-version: '3.9'
 services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    image: pharos-web:latest
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      API_URL: ${API_URL:-http://api:3001}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://api:3001}
+      TENANT_HOST_SUFFIX: ${TENANT_HOST_SUFFIX:-pharos.local}
+      NEXT_PUBLIC_TENANT_HOST_SUFFIX: ${NEXT_PUBLIC_TENANT_HOST_SUFFIX:-pharos.local}
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - '3000:3000'
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3000 > /dev/null || exit 1']
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - pharos_net
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    image: pharos-api:latest
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: ${DATABASE_URL:-postgresql://pharos:pharos@postgres:5432/pharos}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      JWT_SECRET: ${JWT_SECRET:-dev_local_jwt_secret_at_least_32_chars}
+      JWT_ISSUER: ${JWT_ISSUER:-}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-}
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-60000}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-120}
+      RATE_LIMIT_LOGIN_MAX: ${RATE_LIMIT_LOGIN_MAX:-10}
+      RATE_LIMIT_SYSTEM_MAX: ${RATE_LIMIT_SYSTEM_MAX:-30}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://pharos.local:3000,http://*.pharos.local:3000}
+      SYSTEM_OWNER_KEY: ${SYSTEM_OWNER_KEY:-dev_local_system_owner_key_at_least_32_chars}
+      SYSTEM_ADMIN_EMAILS: ${SYSTEM_ADMIN_EMAILS:-owner@shakti.test}
+    ports:
+      - '3001:3001'
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://localhost:3001/health > /dev/null || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - pharos_net
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    image: pharos-worker:latest
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:-postgresql://pharos:pharos@postgres:5432/pharos}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      JWT_SECRET: ${JWT_SECRET:-dev_local_jwt_secret_at_least_32_chars}
+      JWT_ISSUER: ${JWT_ISSUER:-}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-}
+      SYSTEM_OWNER_KEY: ${SYSTEM_OWNER_KEY:-dev_local_system_owner_key_at_least_32_chars}
+      SYSTEM_ADMIN_EMAILS: ${SYSTEM_ADMIN_EMAILS:-owner@shakti.test}
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - pharos_net
+
   postgres:
     image: postgres:16-alpine
     container_name: pharos-postgres
@@ -12,6 +91,8 @@ services:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - pharos_net
 
   redis:
     image: redis:7-alpine
@@ -21,7 +102,13 @@ services:
       - '6379:6379'
     volumes:
       - redis_data:/data
+    networks:
+      - pharos_net
 
 volumes:
   postgres_data:
   redis_data:
+
+networks:
+  pharos_net:
+    driver: bridge

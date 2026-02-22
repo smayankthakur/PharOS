@@ -14,7 +14,11 @@ export default defineConfig({
       DATABASE_URL:
         process.env.DATABASE_URL ?? 'postgresql://pharos:pharos@localhost:5432/pharos',
       REDIS_URL: process.env.REDIS_URL ?? 'redis://localhost:6379',
-      JWT_SECRET: process.env.JWT_SECRET ?? 'change_me',
+      JWT_SECRET:
+        process.env.JWT_SECRET ?? 'test_jwt_secret_for_vitest_32_chars_min',
+      SYSTEM_OWNER_KEY:
+        process.env.SYSTEM_OWNER_KEY ?? 'test_system_owner_key_for_vitest_32_chars',
+      SYSTEM_ADMIN_EMAILS: process.env.SYSTEM_ADMIN_EMAILS ?? 'owner@shakti.test',
     },
   },
 });

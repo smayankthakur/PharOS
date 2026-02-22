@@ -28,7 +28,7 @@ Locked V1 scope:
 1. Start infra:
 
 ```bash
-docker compose up -d
+docker compose up -d postgres redis
 ```
 
 2. Install deps:
@@ -92,7 +92,7 @@ All seeded users use password `Admin@12345`.
 
 System owner key for tenant provisioning:
 - Header: `x-system-owner-key`
-- Value (default): `dev_system_owner_key`
+- Value (local example): `dev_local_system_owner_key_at_least_32_chars`
 
 System admin emails (for reseller layer):
 - Env: `SYSTEM_ADMIN_EMAILS=owner@shakti.test`
@@ -148,6 +148,7 @@ System admin emails (for reseller layer):
 npm run typecheck
 npm run lint
 npm run test
+npm run check:lock-platform
 ```
 
 - End-to-end gate table:
@@ -162,9 +163,24 @@ npm run gates
 npm run smoke
 ```
 
+## Production entrypoints
+
+```bash
+npm run build:web
+npm run start:web
+npm run build:api
+npm run start:api
+npm run build:worker
+npm run start:worker
+npm run migrate:deploy
+npm run healthcheck
+```
+
 ## Runtime notes
 
 - `DATABASE_URL` is required. API/DB scripts fail fast with a clear error when missing.
+- `JWT_SECRET` and `SYSTEM_OWNER_KEY` must be 32+ chars.
+- In `production`, weak defaults are rejected at startup (`change_me`, short secrets, empty `SYSTEM_ADMIN_EMAILS`).
 - `REDIS_URL` is optional for API-only local development:
   - API falls back to `in_memory` mode for Redis-dependent health checks.
   - Queue-backed endpoints return `503` until `REDIS_URL` is configured.
@@ -180,33 +196,50 @@ Create a Vercel project for the web app only:
 
 1. Import repo and set **Root Directory** to `apps/web`.
 2. Use default Next.js framework detection.
-3. Set env vars in Vercel project:
+3. Set Node runtime to `20.x` and install command to `npm ci`.
+4. Set env vars in Vercel project:
    - `API_URL=https://<your-api-domain>`
    - `NEXT_PUBLIC_API_URL=https://<your-api-domain>`
-4. Deploy.
+   - `TENANT_HOST_SUFFIX=<your-web-domain>` (example: `app.example.com`)
+   - `NEXT_PUBLIC_TENANT_HOST_SUFFIX=<your-web-domain>`
+5. Deploy.
 
 Notes:
 - API and worker are separate services; host them outside Vercel (Render/Fly/Railway).
 - Never add platform-specific SWC packages (e.g. `@next/swc-win32-*`) as direct dependencies.
+- Lockfile safety is enforced by `scripts/check-lock-platform.mjs` in CI.
+- Cookie auth is `httpOnly` and `sameSite=lax`; privileged API routes rely on Bearer token auth.
 
 ## Docker
 
 - Build API image:
 
 ```bash
-docker build -t pharos-api --build-arg WORKSPACE=@pharos/api .
+docker build -f Dockerfile.api -t pharos-api .
 ```
 
 - Build web image:
 
 ```bash
-docker build -t pharos-web --build-arg WORKSPACE=@pharos/web .
+docker build -f Dockerfile.web -t pharos-web .
 ```
 
 - Build worker image:
 
 ```bash
-docker build -t pharos-worker --build-arg WORKSPACE=@pharos/worker .
+docker build -f Dockerfile.worker -t pharos-worker .
+```
+
+- Run full stack in containers:
+
+```bash
+docker compose up -d --build
+```
+
+- Run full stack with local Postgres/Redis:
+
+```bash
+docker compose up -d --build
 ```
 
 ## 5-minute demo script

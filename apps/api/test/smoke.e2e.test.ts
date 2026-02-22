@@ -11,7 +11,8 @@ describe('API smoke', () => {
   let shaktiOwnerToken = '';
   let vikramOwnerToken = '';
   let vikramTenantId = '';
-  const systemOwnerKey = process.env.SYSTEM_OWNER_KEY ?? 'dev_system_owner_key';
+  const systemOwnerKey =
+    process.env.SYSTEM_OWNER_KEY ?? 'test_system_owner_key_for_vitest_32_chars';
 
   const login = async (email: string, password: string): Promise<string> => {
     const response = await request(app.getHttpServer()).post('/auth/login').send({
