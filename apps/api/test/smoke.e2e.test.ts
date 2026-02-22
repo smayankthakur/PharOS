@@ -47,9 +47,10 @@ describe('API smoke', () => {
     const response = await request(app.getHttpServer()).get('/health');
 
     expect(response.status).toBe(200);
-    expect(response.body.status).toBe('ok');
-    expect(response.body.db).toBe('connected');
-    expect(response.body.redis).toBe('connected');
+    expect(response.body).toEqual({
+      ok: true,
+      service: 'pharos-api',
+    });
   });
 
   it('POST /auth/login returns jwt for seeded owner', async () => {

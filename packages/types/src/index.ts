@@ -1,10 +1,8 @@
 export type ConnectionState = 'connected' | 'disconnected' | 'in_memory';
 
 export type HealthResponse = {
-  status: 'ok';
-  db: ConnectionState;
-  redis: ConnectionState;
-  timestamp: Date;
+  ok: true;
+  service: 'pharos-api';
 };
 
 export const RULES = ['R1', 'R2', 'R3', 'R4'] as const;
