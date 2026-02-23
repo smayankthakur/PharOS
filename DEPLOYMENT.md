@@ -88,6 +88,7 @@ Browser
    - `NEXT_PUBLIC_API_URL=https://api.example.com`
    - `TENANT_HOST_SUFFIX=app.example.com`
    - `NEXT_PUBLIC_TENANT_HOST_SUFFIX=app.example.com`
+   - Optional (lockfile compatibility fallback): `NEXT_IGNORE_INCORRECT_LOCKFILE=1`
 7. Add domains:
    - `app.example.com`
    - `*.app.example.com`

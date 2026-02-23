@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "cross-env NEXT_IGNORE_INCORRECT_LOCKFILE=1 next build",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint src --ext .ts,.tsx",
     "typecheck": "tsc --noEmit -p tsconfig.json"
