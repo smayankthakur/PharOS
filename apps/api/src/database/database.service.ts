@@ -24,8 +24,17 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy, BeforeApp
   }
 
   async onModuleInit(): Promise<void> {
-    await this.pool.query('SELECT 1');
-    this.isHealthy = true;
+    try {
+      await this.pool.query('SELECT 1');
+      this.isHealthy = true;
+    } catch (error) {
+      this.isHealthy = false;
+      console.error(
+        'Database connection failed. Check DATABASE_URL and Railway env vars.',
+        error instanceof Error ? error.message : error,
+      );
+      throw new Error('Database connection failed. Check DATABASE_URL and Railway env vars.');
+    }
   }
 
   async onModuleDestroy(): Promise<void> {

@@ -25,6 +25,16 @@ test('invalid DATABASE_URL throws clear error', () => {
   );
 });
 
+test('missing DATABASE_URL and PG variables throws clear no-config error', () => {
+  assert.throws(
+    () =>
+      loadConfig({
+        ...baseEnv,
+      }),
+    /No database configuration found/,
+  );
+});
+
 test('normalizeDatabaseUrl strips wrapping quotes', () => {
   const normalized = normalizeDatabaseUrl('"postgresql://u:p@localhost:5432/pharos"');
   assert.equal(normalized, 'postgresql://u:p@localhost:5432/pharos');

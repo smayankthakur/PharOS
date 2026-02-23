@@ -110,6 +110,20 @@ const buildDatabaseUrlFromPgEnv = (env: z.infer<typeof envSchema>, nodeEnv: stri
   return url.toString();
 };
 
+const applySslModeIfNeeded = (databaseUrl: string, env: z.infer<typeof envSchema>): string => {
+  const parsed = new URL(databaseUrl);
+  const requireSsl =
+    env.PGSSLMODE?.trim().toLowerCase() === 'require' ||
+    toBool(env.DATABASE_SSL) ||
+    (env.NODE_ENV === 'production' && !isLocalHost(parsed.hostname));
+
+  if (requireSsl && !parsed.searchParams.has('sslmode')) {
+    parsed.searchParams.set('sslmode', 'require');
+  }
+
+  return parsed.toString();
+};
+
 const invalidDatabaseUrlError = (
   normalizedExists: boolean,
   env: z.infer<typeof envSchema>,
@@ -133,28 +147,39 @@ const invalidDatabaseUrlError = (
 const resolveDatabaseUrl = (env: z.infer<typeof envSchema>): string => {
   const normalizedDatabaseUrl = normalizeDatabaseUrl(env.DATABASE_URL);
   const fromPgVars = buildDatabaseUrlFromPgEnv(env, env.NODE_ENV);
-  const databaseUrl = normalizedDatabaseUrl.length > 0 ? normalizedDatabaseUrl : fromPgVars;
+  const hasDatabaseUrl = normalizedDatabaseUrl.length > 0;
+  const hasPgParts =
+    Boolean(env.PGHOST?.trim()) &&
+    Boolean(env.PGUSER?.trim()) &&
+    Boolean(env.PGPASSWORD?.trim()) &&
+    Boolean(env.PGDATABASE?.trim());
+  const databaseUrl = hasDatabaseUrl ? normalizedDatabaseUrl : fromPgVars;
 
   if (databaseUrl.length === 0) {
-    throw invalidDatabaseUrlError(normalizedDatabaseUrl.length > 0, env);
+    if (!hasDatabaseUrl && !hasPgParts) {
+      throw new Error(
+        'No database configuration found. Set DATABASE_URL or PGHOST/PGUSER/PGPASSWORD/PGDATABASE.',
+      );
+    }
+    throw invalidDatabaseUrlError(hasDatabaseUrl, env);
   }
 
   if (!databaseUrl.startsWith('postgres://') && !databaseUrl.startsWith('postgresql://')) {
-    throw invalidDatabaseUrlError(normalizedDatabaseUrl.length > 0, env);
+    throw invalidDatabaseUrlError(hasDatabaseUrl, env);
   }
 
   let parsed: URL;
   try {
     parsed = new URL(databaseUrl);
   } catch {
-    throw invalidDatabaseUrlError(normalizedDatabaseUrl.length > 0, env);
+    throw invalidDatabaseUrlError(hasDatabaseUrl, env);
   }
 
   if (!parsed.hostname || !parsed.pathname || parsed.pathname === '/') {
-    throw invalidDatabaseUrlError(normalizedDatabaseUrl.length > 0, env);
+    throw invalidDatabaseUrlError(hasDatabaseUrl, env);
   }
 
-  return databaseUrl;
+  return applySslModeIfNeeded(databaseUrl, env);
 };
 
 export const loadConfig = (env: NodeJS.ProcessEnv = process.env): AppConfig => {
