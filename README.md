@@ -225,6 +225,7 @@ Create a Vercel project for the web app only:
 4. Set env vars in Vercel project:
    - `API_URL=https://<your-api-domain>`
    - `NEXT_PUBLIC_API_URL=https://<your-api-domain>`
+   - `NEXT_PUBLIC_WS_URL=wss://<your-api-domain>`
    - `TENANT_HOST_SUFFIX=<your-web-domain>` (example: `app.example.com`)
    - `NEXT_PUBLIC_TENANT_HOST_SUFFIX=<your-web-domain>`
 5. Deploy.
