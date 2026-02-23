@@ -100,7 +100,7 @@ Create two services from same repo.
 API Web Service:
 - Root Directory: `pharos`
 - Build Command: `npm ci --include=dev && npm run build:api`
-- Start Command: `npm run start:api`
+- Start Command: `npm run start -w @pharos/api`
 - Health Check Path: `/health`
 - Port: `3001` (set `PORT=3001`)
 
@@ -112,6 +112,12 @@ Worker Background Service:
 Shared env vars:
 - `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET`, `SYSTEM_OWNER_KEY`, `SYSTEM_ADMIN_EMAILS`
 - API-only: `ALLOWED_ORIGINS`, `PORT`, rate-limit vars
+
+Known working origin allowlist example:
+- `ALLOWED_ORIGINS=https://pharos.sitelytc.com,https://pharos-one.vercel.app`
+
+Troubleshooting:
+- If `curl https://<render-service>.onrender.com/health` returns `404` with header `x-render-routing: no-render-subdomain`, the request is not reaching your service. Verify the service URL/subdomain in Render and that the service is live.
 
 Migrations:
 - Use API pre-deploy command: `npm ci --include=dev && npm run migrate:deploy`
