@@ -99,14 +99,14 @@ Create two services from same repo.
 
 API Web Service:
 - Root Directory: `pharos`
-- Build Command: `npm ci && npm run build:api`
+- Build Command: `npm ci --include=dev && npm run build:api`
 - Start Command: `npm run start:api`
 - Health Check Path: `/health`
 - Port: `3001` (set `PORT=3001`)
 
 Worker Background Service:
 - Root Directory: `pharos`
-- Build Command: `npm ci && npm run build:worker`
+- Build Command: `npm ci --include=dev && npm run build:worker`
 - Start Command: `npm run start:worker`
 
 Shared env vars:
@@ -114,7 +114,7 @@ Shared env vars:
 - API-only: `ALLOWED_ORIGINS`, `PORT`, rate-limit vars
 
 Migrations:
-- Use API pre-deploy command: `npm ci && npm run migrate:deploy`
+- Use API pre-deploy command: `npm ci --include=dev && npm run migrate:deploy`
 
 ### 3) Railway (API + Worker + optional Web)
 
