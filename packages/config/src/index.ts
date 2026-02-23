@@ -2,7 +2,14 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  DATABASE_URL: z.string().min(1),
+  DATABASE_URL: z.string().optional(),
+  PGHOST: z.string().optional(),
+  PGPORT: z.string().optional(),
+  PGUSER: z.string().optional(),
+  PGPASSWORD: z.string().optional(),
+  PGDATABASE: z.string().optional(),
+  PGSSLMODE: z.string().optional(),
+  DATABASE_SSL: z.string().optional(),
   REDIS_URL: z.string().optional(),
   JWT_SECRET: z.string().min(1),
   JWT_ISSUER: z.string().trim().optional(),
@@ -37,6 +44,119 @@ export type AppConfig = {
   systemAdminEmails: string[];
 };
 
+const toBool = (value: string | undefined): boolean => {
+  if (!value) {
+    return false;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on';
+};
+
+const isLocalHost = (host: string): boolean => {
+  const normalized = host.trim().toLowerCase();
+  return normalized === 'localhost' || normalized === '127.0.0.1' || normalized === '::1';
+};
+
+export const normalizeDatabaseUrl = (raw: string | undefined): string => {
+  if (!raw) {
+    return '';
+  }
+
+  const trimmed = raw.trim();
+  if (trimmed.length === 0) {
+    return '';
+  }
+
+  const startsWithSingle = trimmed.startsWith("'");
+  const endsWithSingle = trimmed.endsWith("'");
+  const startsWithDouble = trimmed.startsWith('"');
+  const endsWithDouble = trimmed.endsWith('"');
+
+  if ((startsWithSingle && endsWithSingle) || (startsWithDouble && endsWithDouble)) {
+    return trimmed.slice(1, -1).trim();
+  }
+
+  return trimmed;
+};
+
+const buildDatabaseUrlFromPgEnv = (env: z.infer<typeof envSchema>, nodeEnv: string): string => {
+  const host = env.PGHOST?.trim() ?? '';
+  const user = env.PGUSER?.trim() ?? '';
+  const password = env.PGPASSWORD?.trim() ?? '';
+  const database = env.PGDATABASE?.trim() ?? '';
+  const port = env.PGPORT?.trim() || '5432';
+
+  if (!host || !user || !password || !database) {
+    return '';
+  }
+
+  const encodedUser = encodeURIComponent(user);
+  const encodedPassword = encodeURIComponent(password);
+  const encodedDatabase = encodeURIComponent(database);
+  const url = new URL(
+    `postgresql://${encodedUser}:${encodedPassword}@${host}:${port}/${encodedDatabase}`,
+  );
+
+  const requireSsl =
+    env.PGSSLMODE?.trim().toLowerCase() === 'require' ||
+    toBool(env.DATABASE_SSL) ||
+    (nodeEnv === 'production' && !isLocalHost(host));
+
+  if (requireSsl) {
+    url.searchParams.set('sslmode', 'require');
+  }
+
+  return url.toString();
+};
+
+const invalidDatabaseUrlError = (
+  normalizedExists: boolean,
+  env: z.infer<typeof envSchema>,
+): Error => {
+  const diagnostics = {
+    DATABASE_URL: normalizedExists,
+    PGHOST: Boolean(env.PGHOST?.trim()),
+    PGPORT: Boolean(env.PGPORT?.trim()),
+    PGUSER: Boolean(env.PGUSER?.trim()),
+    PGPASSWORD: Boolean(env.PGPASSWORD?.trim()),
+    PGDATABASE: Boolean(env.PGDATABASE?.trim()),
+  };
+
+  return new Error(
+    `Invalid DATABASE_URL. Set DATABASE_URL to a valid Postgres URL like postgresql://user:pass@host:5432/db?sslmode=require. Diagnostics: ${JSON.stringify(
+      diagnostics,
+    )}`,
+  );
+};
+
+const resolveDatabaseUrl = (env: z.infer<typeof envSchema>): string => {
+  const normalizedDatabaseUrl = normalizeDatabaseUrl(env.DATABASE_URL);
+  const fromPgVars = buildDatabaseUrlFromPgEnv(env, env.NODE_ENV);
+  const databaseUrl = normalizedDatabaseUrl.length > 0 ? normalizedDatabaseUrl : fromPgVars;
+
+  if (databaseUrl.length === 0) {
+    throw invalidDatabaseUrlError(normalizedDatabaseUrl.length > 0, env);
+  }
+
+  if (!databaseUrl.startsWith('postgres://') && !databaseUrl.startsWith('postgresql://')) {
+    throw invalidDatabaseUrlError(normalizedDatabaseUrl.length > 0, env);
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(databaseUrl);
+  } catch {
+    throw invalidDatabaseUrlError(normalizedDatabaseUrl.length > 0, env);
+  }
+
+  if (!parsed.hostname || !parsed.pathname || parsed.pathname === '/') {
+    throw invalidDatabaseUrlError(normalizedDatabaseUrl.length > 0, env);
+  }
+
+  return databaseUrl;
+};
+
 export const loadConfig = (env: NodeJS.ProcessEnv = process.env): AppConfig => {
   const parsed = envSchema.parse(env);
   const nodeEnv = parsed.NODE_ENV;
@@ -55,10 +175,16 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): AppConfig => {
   const systemAdminEmails = parsed.SYSTEM_ADMIN_EMAILS.split(',')
     .map((email) => email.trim().toLowerCase())
     .filter((email) => email.length > 0);
+  const databaseUrl = resolveDatabaseUrl(parsed);
 
   if (env.CONFIG_DIAGNOSTICS === 'true') {
     const diagnostics: Record<string, boolean> = {
-      DATABASE_URL: parsed.DATABASE_URL.trim().length > 0,
+      DATABASE_URL: normalizeDatabaseUrl(parsed.DATABASE_URL).length > 0,
+      PGHOST: Boolean(parsed.PGHOST?.trim()),
+      PGPORT: Boolean(parsed.PGPORT?.trim()),
+      PGUSER: Boolean(parsed.PGUSER?.trim()),
+      PGPASSWORD: Boolean(parsed.PGPASSWORD?.trim()),
+      PGDATABASE: Boolean(parsed.PGDATABASE?.trim()),
       JWT_SECRET: parsed.JWT_SECRET.trim().length > 0,
       SYSTEM_OWNER_KEY: parsed.SYSTEM_OWNER_KEY.trim().length > 0,
       ALLOWED_ORIGINS: allowedOrigins.length > 0,
@@ -110,7 +236,7 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): AppConfig => {
 
   return {
     nodeEnv,
-    databaseUrl: parsed.DATABASE_URL,
+    databaseUrl,
     redisUrl: parsed.REDIS_URL?.trim() ? parsed.REDIS_URL : null,
     jwtSecret: parsed.JWT_SECRET,
     jwtIssuer: parsed.JWT_ISSUER?.trim() ? parsed.JWT_ISSUER : null,

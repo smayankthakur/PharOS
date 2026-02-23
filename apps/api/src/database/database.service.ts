@@ -10,6 +10,14 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy, BeforeApp
 
   constructor() {
     const config = loadConfig();
+    const parsedDatabaseUrl = new URL(config.databaseUrl);
+    const databaseName = parsedDatabaseUrl.pathname.replace(/^\//, '');
+    const sslEnabled = parsedDatabaseUrl.searchParams.get('sslmode') === 'require';
+
+    console.info(
+      `[db] connection target host=${parsedDatabaseUrl.hostname} db=${databaseName} ssl=${sslEnabled ? 'on' : 'off'}`,
+    );
+
     this.pool = new Pool({ connectionString: config.databaseUrl });
     this.isHealthy = false;
     this.isClosed = false;
