@@ -256,6 +256,8 @@ Do not allow merging if any required check is failing.
 - Never commit `.env` files or runtime logs.
 - Update GitHub/Render/Vercel secrets before deploying.
 - Invalidate old tokens after key rotation.
+- If a real secret is ever committed, rotate immediately and rewrite Git history
+  (for example with `git filter-repo`) before continuing deployments.
 
 ## Docker
 

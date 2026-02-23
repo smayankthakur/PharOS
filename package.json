@@ -23,7 +23,7 @@
     "start:worker": "npm run start --workspace @pharos/worker",
     "build:all": "npm run build:web && npm run build:api && npm run build:worker",
     "start:all": "concurrently -n api,web,worker -c cyan,green,yellow \"npm run start:api\" \"npm run start:web\" \"npm run start:worker\"",
-    "build": "npm run build --workspaces",
+    "build": "npm run build:shared && npm run build --workspace @pharos/api && npm run build --workspace @pharos/web && npm run build --workspace @pharos/worker && npm run build --workspace @pharos/db",
     "start": "npm run start --workspace @pharos/web",
     "format:check": "prettier --check .github/workflows/ci.yml scripts/gates.mjs README.md package.json apps/api/package.json packages/config/src/index.ts",
     "lint": "npm run lint --workspaces",

@@ -1,0 +1,11 @@
+[allowlist]
+description = "Allow explicit non-secret test placeholders only."
+regexes = [
+  '''example_only_do_not_use_jwt_32_char_placeholder_1234''',
+  '''example_only_do_not_use_owner_32_char_placeholder_1234''',
+  '''test_jwt_secret_for_vitest_32_chars_min''',
+  '''test_system_owner_key_for_vitest_32_chars''',
+  '''dev_local_jwt_secret_at_least_32_chars''',
+  '''dev_local_system_owner_key_at_least_32_chars''',
+  '''Admin@12345'''
+]
