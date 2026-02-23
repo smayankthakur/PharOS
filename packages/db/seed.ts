@@ -1041,7 +1041,9 @@ const seed = async (): Promise<void> => {
 
     await client.query('COMMIT');
     console.log('Seed complete');
-    console.log(`Seed credentials password (dev only): ${resolvedSeedPassword}`);
+    if (!process.env.CI && !seedUserPassword) {
+      console.log('Seed password generated for local dev. Set SEED_USER_PASSWORD to override.');
+    }
   } catch (error) {
     await client.query('ROLLBACK');
     throw error;

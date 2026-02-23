@@ -74,7 +74,10 @@ export class RateLimitMiddleware implements NestMiddleware {
     private readonly auditService: AuditService,
   ) {
     const config = loadConfig();
-    this.store = config.redisUrl ? new RedisRateLimitStore(redisService) : new MemoryRateLimitStore();
+    this.store =
+      config.rateLimitBackend === 'redis'
+        ? new RedisRateLimitStore(redisService)
+        : new MemoryRateLimitStore();
     this.windowMs = config.rateLimitWindowMs;
     this.max = config.rateLimitMax;
     this.loginMax = config.rateLimitLoginMax;

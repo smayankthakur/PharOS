@@ -2,15 +2,52 @@ name: CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
-  ci:
+  quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Prettier check
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lockfile integrity
+        run: npm run check:lock
+
+  test_api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:15
         env:
           POSTGRES_DB: pharos
           POSTGRES_USER: pharos
@@ -23,7 +60,7 @@ jobs:
           --health-timeout 5s
           --health-retries 20
       redis:
-        image: redis:7-alpine
+        image: redis:7
         ports:
           - 6379:6379
         options: >-
@@ -31,53 +68,227 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 20
-
     env:
+      NODE_ENV: test
       DATABASE_URL: postgresql://pharos:pharos@localhost:5432/pharos
       REDIS_URL: redis://localhost:6379
-      JWT_SECRET: ci_super_secret_for_pharos_32_chars_minimum
+      JWT_SECRET: ci_jwt_secret_32_chars_minimum_value
       SYSTEM_OWNER_KEY: ci_system_owner_key_32_chars_minimum
       SYSTEM_ADMIN_EMAILS: owner@shakti.test
+      RATE_LIMIT_BACKEND: redis
+      RATE_LIMIT_WINDOW_SEC: 60
+      RATE_LIMIT_MAX: 120
       PORT: 4000
-
+      SEED_USER_PASSWORD: ci_seed_password_only_for_tests
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version-file: '.nvmrc'
+          cache: npm
 
-      - name: Install dependencies
+      - name: Install
         run: npm ci
-        working-directory: pharos
-
-      - name: Validate lockfile platform safety
-        run: npm run check:lock
-        working-directory: pharos
 
       - name: Run migrations
-        run: npm run migrate
-        working-directory: pharos
+        run: npm run db:migrate
 
-      - name: Seed database
-        run: npm run seed
-        working-directory: pharos
+      - name: Seed test data
+        run: npm run db:seed:test
 
-      - name: Lint
-        run: npm run lint
-        working-directory: pharos
+      - name: Run API tests (JUnit + coverage)
+        run: npm run test:api:ci
 
-      - name: Typecheck
-        run: npm run typecheck
-        working-directory: pharos
+      - name: Upload API test report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-api
+          path: apps/api/reports/api-junit.xml
+          if-no-files-found: error
 
-      - name: Test
-        run: npm run test
-        working-directory: pharos
+      - name: Upload API coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-api
+          path: apps/api/coverage
+          if-no-files-found: warn
 
-      - name: Build
+  test_web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_API_URL: https://example.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Web typecheck
+        run: npm run typecheck --workspace @pharos/web
+
+      - name: Web build
+        run: npm run build --workspace @pharos/web
+
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Dependency Review (PR only)
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@v4
+
+      - name: npm audit (non-blocking)
+        run: npm audit --audit-level=high || true
+
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trivy filesystem scan (HIGH,CRITICAL)
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: secret,misconfig
+          format: sarif
+          output: trivy-results.sarif
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+
+      - name: Upload Trivy SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+
+      - name: Generate SBOM (Syft)
+        uses: anchore/sbom-action@v0
+        with:
+          output-file: sbom.spdx.json
+          format: spdx-json
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.spdx.json
+
+  codeql:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v3
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NEXT_PUBLIC_API_URL: https://example.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Build all workspaces
         run: npm run build
-        working-directory: pharos
+
+      - name: Upload API build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-api
+          path: apps/api/dist
+          if-no-files-found: error
+
+      - name: Upload web build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-web
+          path: apps/web/.next
+          if-no-files-found: error
+
+  gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [quality, test_api, test_web, security, build]
+    env:
+      JWT_SECRET: ci_jwt_secret_32_chars_minimum_value
+      NODE_ENV: production
+      RATE_LIMIT_BACKEND: redis
+      TEST_REPORT_FILE: artifacts/test-results-api/api-junit.xml
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download API test report
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results-api
+          path: artifacts/test-results-api
+
+      - name: Run gates
+        run: npm run gates

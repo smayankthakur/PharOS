@@ -3,6 +3,7 @@
 PharOS is a multi-tenant B2B margin defense system for distributors.
 
 Locked V1 scope:
+
 - Rules: `R1` Dealer `< MRP`, `R2` Dealer `< MAP`, `R3` Competitor `< MAP`, `R4` Dead stock `>=90 days && on_hand > 10`
 - Impact: `loss` (R1/R2), `risk` (R3), `dead_value` (R4)
 - Roles: `Owner`, `Sales`, `Ops`, `Viewer`
@@ -15,7 +16,7 @@ Locked V1 scope:
 - `packages/db` SQL migrations + migrate/seed/reset scripts
 - `packages/config` env loader
 - `packages/types` shared constants + types
-- `scripts/gates.ts` executable phase gates
+- `scripts/gates.mjs` executable CI gates
 
 ## Prerequisites
 
@@ -79,8 +80,8 @@ Open: `http://shakti.pharos.local:3000`
 ## Demo credentials
 
 Seeded user password comes from `SEED_USER_PASSWORD` at seed time.
-If `SEED_USER_PASSWORD` is not set, `packages/db/seed.ts` generates a dev-only password
-and prints it to the console after seeding.
+If `SEED_USER_PASSWORD` is not set, `packages/db/seed.ts` generates a dev-only password.
+For safety, the generated value is not printed in CI logs.
 
 - Shakti tenant:
   - `owner@shakti.test`
@@ -94,10 +95,12 @@ and prints it to the console after seeding.
   - `viewer@vikram.test`
 
 System owner key for tenant provisioning:
+
 - Header: `x-system-owner-key`
 - Value: use a strong random value from `.env` (`SYSTEM_OWNER_KEY`).
 
 System admin emails (for reseller layer):
+
 - Env: `SYSTEM_ADMIN_EMAILS=owner@shakti.test`
 - Any logged-in user whose email is in this list can manage `/resellers` and provision tenants globally.
 
@@ -148,10 +151,28 @@ System admin emails (for reseller layer):
 - Full checks:
 
 ```bash
+npm run format:check
 npm run typecheck
 npm run lint
 npm run test
 npm run check:lock-platform
+```
+
+- CI-equivalent local run (with Postgres + Redis running):
+
+```bash
+set DATABASE_URL=postgresql://pharos:pharos@localhost:5432/pharos
+set REDIS_URL=redis://localhost:6379
+set JWT_SECRET=replace_with_min_32_chars_secret
+set SYSTEM_OWNER_KEY=replace_with_min_32_chars_secret
+set SYSTEM_ADMIN_EMAILS=owner@shakti.test
+set RATE_LIMIT_BACKEND=redis
+set RATE_LIMIT_WINDOW_SEC=60
+npm run db:migrate
+npm run db:seed:test
+npm run test:api:ci
+npm run build --workspace @pharos/web
+npm run gates
 ```
 
 - End-to-end gate table:
@@ -184,6 +205,7 @@ npm run healthcheck
 - `DATABASE_URL` is required. API/DB scripts fail fast with a clear error when missing.
 - `JWT_SECRET` and `SYSTEM_OWNER_KEY` must be 32+ chars.
 - In `production`, weak defaults are rejected at startup (`change_me`, short secrets, empty `SYSTEM_ADMIN_EMAILS`).
+- In `production`, `RATE_LIMIT_BACKEND` must be `redis` and `REDIS_URL` must be configured.
 - `REDIS_URL` is optional for API-only local development:
   - API falls back to `in_memory` mode for Redis-dependent health checks.
   - Queue-backed endpoints return `503` until `REDIS_URL` is configured.
@@ -208,10 +230,32 @@ Create a Vercel project for the web app only:
 5. Deploy.
 
 Notes:
+
 - API and worker are separate services; host them outside Vercel (Render/Fly/Railway).
 - Never add platform-specific SWC packages (e.g. `@next/swc-win32-*`) as direct dependencies.
 - Lockfile safety is enforced by `scripts/check-lock-platform.mjs` in CI.
 - Cookie auth is `httpOnly` and `sameSite=lax`; privileged API routes rely on Bearer token auth.
+
+## Branch protection
+
+Configure branch protection on `main` and require these checks:
+
+- `quality`
+- `test_api`
+- `test_web`
+- `security`
+- `codeql`
+- `build`
+- `gates`
+
+Do not allow merging if any required check is failing.
+
+## Secret rotation checklist
+
+- Rotate `JWT_SECRET` and `SYSTEM_OWNER_KEY` every environment bootstrap.
+- Never commit `.env` files or runtime logs.
+- Update GitHub/Render/Vercel secrets before deploying.
+- Invalidate old tokens after key rotation.
 
 ## Docker
 

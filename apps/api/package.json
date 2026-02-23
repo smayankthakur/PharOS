@@ -8,7 +8,8 @@
     "start": "node dist/main.js",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:ci": "vitest run --reporter=default --reporter=junit --outputFile=reports/api-junit.xml --coverage --coverage.reporter=lcov --coverage.reporter=text --coverage.reportsDirectory=coverage"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.20",
@@ -28,6 +29,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^3.2.4",
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.1",
     "@types/jsonwebtoken": "^9.0.9",
