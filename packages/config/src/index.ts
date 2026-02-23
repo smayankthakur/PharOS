@@ -42,9 +42,16 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): AppConfig => {
   const nodeEnv = parsed.NODE_ENV;
   const isProduction = nodeEnv === 'production';
   const strictMode = isProduction;
-  const allowedOrigins = parsed.ALLOWED_ORIGINS.split(',')
+  const parsedAllowedOrigins = parsed.ALLOWED_ORIGINS.split(',')
     .map((origin) => origin.trim())
     .filter((origin) => origin.length > 0);
+  const defaultAllowedOrigins = isProduction
+    ? ['https://pharos.sitelytc.com', 'https://pharos-one.vercel.app', 'https://pharos.vercel.app']
+    : ['http://pharos.local:3000', 'http://*.pharos.local:3000', 'http://localhost:3000'];
+  const allowedOrigins =
+    parsedAllowedOrigins.length > 0
+      ? Array.from(new Set(parsedAllowedOrigins))
+      : defaultAllowedOrigins;
   const systemAdminEmails = parsed.SYSTEM_ADMIN_EMAILS.split(',')
     .map((email) => email.trim().toLowerCase())
     .filter((email) => email.length > 0);
@@ -81,9 +88,9 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): AppConfig => {
     throw new Error('SYSTEM_OWNER_KEY cannot use the development default in production.');
   }
 
-  if (strictMode && allowedOrigins.length === 0) {
+  if (strictMode && allowedOrigins.includes('*')) {
     throw new Error(
-      `Invalid env var ALLOWED_ORIGINS: value cannot be empty in production. strictMode=${strictMode} (NODE_ENV=${nodeEnv}).`,
+      `Invalid env var ALLOWED_ORIGINS: wildcard '*' is not allowed in production. strictMode=${strictMode} (NODE_ENV=${nodeEnv}).`,
     );
   }
 
