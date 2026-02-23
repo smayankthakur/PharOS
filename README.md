@@ -230,12 +230,27 @@ Create a Vercel project for the web app only:
    - `NEXT_PUBLIC_TENANT_HOST_SUFFIX=<your-web-domain>`
 5. Deploy.
 
+Production example:
+
+- `NEXT_PUBLIC_API_URL=https://pharos-g1ts.onrender.com`
+- `API_URL=https://pharos-g1ts.onrender.com`
+
 Notes:
 
 - API and worker are separate services; host them outside Vercel (Render/Fly/Railway).
 - Never add platform-specific SWC packages (e.g. `@next/swc-win32-*`) as direct dependencies.
 - Lockfile safety is enforced by `scripts/check-lock-platform.mjs` in CI.
 - Cookie auth is `httpOnly` and `sameSite=lax`; privileged API routes rely on Bearer token auth.
+
+Render API required env vars:
+
+- `DATABASE_URL=<managed postgres url>`
+- `REDIS_URL=<managed redis url>`
+- `JWT_SECRET=<32+ chars>`
+- `SYSTEM_OWNER_KEY=<32+ chars>`
+- `SYSTEM_ADMIN_EMAILS=<comma-separated emails>`
+- `ALLOWED_ORIGINS=https://pharos.sitelytc.com,https://pharos-one.vercel.app`
+- `NODE_ENV=production`
 
 ## Branch protection
 
