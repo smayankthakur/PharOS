@@ -13,17 +13,21 @@ export class HealthController {
   ) {}
 
   @Get()
-  async getHealth(): Promise<HealthResponse> {
+  async getHealth(): Promise<HealthResponse & { ok: true; service: 'pharos-api'; ts: string }> {
     await Promise.all([
       this.databaseService.checkConnection(),
       this.redisService.checkConnection(),
     ]);
 
+    const now = new Date();
     return {
+      ok: true,
+      service: 'pharos-api',
+      ts: now.toISOString(),
       status: 'ok',
       db: this.databaseService.status,
       redis: this.redisService.status,
-      timestamp: new Date(),
+      timestamp: now,
     };
   }
 }

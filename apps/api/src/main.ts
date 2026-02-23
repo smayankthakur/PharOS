@@ -2,7 +2,7 @@ import 'dotenv/config';
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import type { CorsOptionsDelegate } from '@nestjs/common/interfaces/external/cors-options.interface';
-import type { Request } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { AppModule } from './app.module';
 import { loadConfig } from '@pharos/config';
 import { AppLoggerService } from './logger/app-logger.service';
@@ -20,24 +20,30 @@ const matchesWildcardOrigin = (origin: string, pattern: string): boolean => {
 const bootstrap = async (): Promise<void> => {
   const config = loadConfig();
   const app = await NestFactory.create(AppModule);
-  const isProduction = config.nodeEnv === 'production';
 
   app.enableShutdownHooks();
 
-  const allowedOrigins: string[] = config.allowedOrigins;
+  const envOrigins = (process.env.ALLOWED_ORIGINS ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0);
+
+  const defaults = [
+    'https://pharos.sitelytc.com',
+    'https://pharos-one.vercel.app',
+    'https://pharos.vercel.app',
+    'http://localhost:3000',
+  ];
+
+  const allowedOrigins: string[] = Array.from(
+    new Set<string>([...defaults, ...config.allowedOrigins, ...envOrigins]),
+  );
+
   const corsDelegate: CorsOptionsDelegate<Request> = (req, callback) => {
     const requestOrigin = req.header('origin');
 
     if (!requestOrigin) {
-      const isHealthRoute = req.path === '/health';
-      if (!isProduction || isHealthRoute) {
-        callback(null, { credentials: true, origin: true });
-        return;
-      }
-
-      callback(new Error('CORS origin required in production'), {
-        origin: false,
-      });
+      callback(null, { origin: true });
       return;
     }
 
@@ -51,16 +57,40 @@ const bootstrap = async (): Promise<void> => {
       return;
     }
 
-    callback(null, { credentials: true, origin: true });
+    callback(null, {
+      origin: requestOrigin,
+      credentials: false,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: [
+        'Authorization',
+        'Content-Type',
+        'X-System-Owner-Key',
+        'X-Tenant-Id',
+      ],
+      optionsSuccessStatus: 204,
+    });
   };
+
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    const current = res.getHeader('Vary');
+    if (typeof current === 'string') {
+      if (!current.includes('Origin')) {
+        res.setHeader('Vary', `${current}, Origin`);
+      }
+    } else {
+      res.setHeader('Vary', 'Origin');
+    }
+    next();
+  });
 
   app.enableCors(corsDelegate);
 
   const logger = app.get(AppLoggerService);
   logger.info('api.bootstrap', { allowedOrigins });
 
-  await app.listen(config.port);
-  logger.info('api.started', { port: config.port });
+  const port = Number(process.env.PORT ?? config.port ?? 4000);
+  await app.listen(port);
+  logger.info('api.started', { port });
 };
 
 bootstrap().catch((error: unknown) => {
