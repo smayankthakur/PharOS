@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/main.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "npm run build --workspace @pharos/config && npm run build --workspace @pharos/types && tsc -p tsconfig.json",
     "start": "node dist/main.js",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",

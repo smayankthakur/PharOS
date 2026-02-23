@@ -14,7 +14,7 @@ RUN npm ci
 COPY . .
 
 ARG WORKSPACE=@pharos/api
-RUN npm run build --workspace ${WORKSPACE}
+RUN npm run build:shared && npm run build --workspace ${WORKSPACE}
 
 EXPOSE 4000
 
