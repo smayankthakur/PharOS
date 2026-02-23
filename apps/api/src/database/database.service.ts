@@ -33,7 +33,7 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy, BeforeApp
         'Database connection failed. Check DATABASE_URL and Railway env vars.',
         error instanceof Error ? error.message : error,
       );
-      throw new Error('Database connection failed. Check DATABASE_URL and Railway env vars.');
+      process.exit(1);
     }
   }
 

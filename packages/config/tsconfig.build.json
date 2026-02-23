@@ -5,8 +5,8 @@
     "declaration": true,
     "declarationMap": false,
     "emitDeclarationOnly": false,
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
     "types": ["node"],
     "lib": ["ES2022"]
   },

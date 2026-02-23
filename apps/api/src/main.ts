@@ -87,7 +87,7 @@ const bootstrap = async (): Promise<void> => {
   logger.info('api.bootstrap', { allowedOrigins });
 
   const port = Number(process.env.PORT ?? config.port ?? 4000);
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   logger.info('api.started', { port });
 };
 
