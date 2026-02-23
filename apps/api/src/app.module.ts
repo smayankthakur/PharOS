@@ -8,7 +8,7 @@ import { DealerSalesModule } from './dealer-sales/dealer-sales.module';
 import { DealerModule } from './dealer/dealer.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { ExplainabilityModule } from './explainability/explainability.module';
-import { HealthController } from './health/health.controller';
+import { HealthModule } from './health/health.module';
 import { ImportsModule } from './imports/imports.module';
 import { RequestContextMiddleware } from './logger/request-context.middleware';
 import { AuthenticatedGuard } from './rbac/authenticated.guard';
@@ -45,8 +45,9 @@ import { WarehouseModule } from './warehouse/warehouse.module';
     DealerSalesModule,
     DashboardModule,
     ExplainabilityModule,
+    HealthModule,
   ],
-  controllers: [HealthController, ProofController, AuditController],
+  controllers: [ProofController, AuditController],
   providers: [
     RequestContextMiddleware,
     TenantContextMiddleware,

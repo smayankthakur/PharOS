@@ -51,9 +51,7 @@ const bootstrap = async (): Promise<void> => {
       matchesWildcardOrigin(requestOrigin, pattern),
     );
     if (!allowed) {
-      callback(new Error('CORS origin denied'), {
-        origin: false,
-      });
+      callback(null, { origin: false });
       return;
     }
 
