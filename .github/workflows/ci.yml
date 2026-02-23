@@ -135,6 +135,8 @@ jobs:
     timeout-minutes: 20
     env:
       NEXT_PUBLIC_API_URL: https://example.com
+      API_URL: https://example.com
+      NEXT_IGNORE_INCORRECT_LOCKFILE: '1'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -262,6 +264,8 @@ jobs:
     timeout-minutes: 25
     env:
       NEXT_PUBLIC_API_URL: https://example.com
+      API_URL: https://example.com
+      NEXT_IGNORE_INCORRECT_LOCKFILE: '1'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -275,8 +279,11 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Build all workspaces
-        run: npm run build
+      - name: Build API workspaces
+        run: npm run build:api
+
+      - name: Build web workspace
+        run: npm run build:web
 
       - name: Upload API build artifact
         uses: actions/upload-artifact@v4

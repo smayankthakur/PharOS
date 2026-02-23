@@ -133,8 +133,8 @@ Migrations:
 3. Add Postgres plugin.
 4. Add Redis plugin (recommended).
 5. Commands:
-   - API build: `npm ci && npm run build:api`
-   - API start: `npm run start:api`
+   - API build: `npm ci --include=dev && npm run build:api`
+   - API start: `npm run start -w @pharos/api`
    - Worker build: `npm ci && npm run build:worker`
    - Worker start: `npm run start:worker`
 6. Run migrations once per release:
