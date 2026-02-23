@@ -3,7 +3,7 @@ import { DatabaseService } from '../database/database.service';
 import { RedisService } from '../redis/redis.service';
 import type { HealthResponse } from '@pharos/types';
 
-@Controller('health')
+@Controller()
 export class HealthController {
   constructor(
     @Inject(DatabaseService)
@@ -13,6 +13,12 @@ export class HealthController {
   ) {}
 
   @Get()
+  getRootHealth(): { ok: true } {
+    return { ok: true };
+  }
+
+  @Get('health')
+  @Get('healthz')
   async getHealth(): Promise<HealthResponse & { ok: true; service: 'pharos-api'; ts: string }> {
     await Promise.all([
       this.databaseService.checkConnection(),

@@ -41,22 +41,50 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): AppConfig => {
   const parsed = envSchema.parse(env);
   const nodeEnv = parsed.NODE_ENV;
   const isProduction = nodeEnv === 'production';
+  const strictMode = isProduction;
+  const allowedOrigins = parsed.ALLOWED_ORIGINS.split(',')
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0);
   const systemAdminEmails = parsed.SYSTEM_ADMIN_EMAILS.split(',')
     .map((email) => email.trim().toLowerCase())
     .filter((email) => email.length > 0);
 
-  if (parsed.JWT_SECRET.length < 32 || parsed.JWT_SECRET === 'change_me') {
-    throw new Error('Invalid JWT_SECRET. Use a random secret with minimum length 32 characters.');
+  if (env.CONFIG_DIAGNOSTICS === 'true') {
+    const diagnostics: Record<string, boolean> = {
+      DATABASE_URL: parsed.DATABASE_URL.trim().length > 0,
+      JWT_SECRET: parsed.JWT_SECRET.trim().length > 0,
+      SYSTEM_OWNER_KEY: parsed.SYSTEM_OWNER_KEY.trim().length > 0,
+      ALLOWED_ORIGINS: allowedOrigins.length > 0,
+      SYSTEM_ADMIN_EMAILS: systemAdminEmails.length > 0,
+      REDIS_URL: (parsed.REDIS_URL?.trim().length ?? 0) > 0,
+    };
+    console.info('[config] diagnostics', {
+      nodeEnv,
+      strictMode,
+      requiredEnvPresence: diagnostics,
+    });
   }
 
-  if (parsed.SYSTEM_OWNER_KEY.length < 32) {
+  if (parsed.JWT_SECRET.length < 32 || parsed.JWT_SECRET === 'change_me') {
     throw new Error(
-      'Invalid SYSTEM_OWNER_KEY. Use a random secret with minimum length 32 characters.',
+      `Invalid env var JWT_SECRET: minimum length is 32 characters. strictMode=${strictMode} (NODE_ENV=${nodeEnv}).`,
+    );
+  }
+
+  if (parsed.SYSTEM_OWNER_KEY.length < 32 && strictMode) {
+    throw new Error(
+      `Invalid env var SYSTEM_OWNER_KEY: minimum length is 32 characters. strictMode=${strictMode} (NODE_ENV=${nodeEnv}).`,
     );
   }
 
   if (isProduction && parsed.SYSTEM_OWNER_KEY === 'dev_system_owner_key') {
     throw new Error('SYSTEM_OWNER_KEY cannot use the development default in production.');
+  }
+
+  if (strictMode && allowedOrigins.length === 0) {
+    throw new Error(
+      `Invalid env var ALLOWED_ORIGINS: value cannot be empty in production. strictMode=${strictMode} (NODE_ENV=${nodeEnv}).`,
+    );
   }
 
   if (isProduction && systemAdminEmails.length === 0) {
@@ -89,9 +117,7 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): AppConfig => {
     rateLimitMax: parsed.RATE_LIMIT_MAX,
     rateLimitLoginMax: parsed.RATE_LIMIT_LOGIN_MAX,
     rateLimitSystemMax: parsed.RATE_LIMIT_SYSTEM_MAX,
-    allowedOrigins: parsed.ALLOWED_ORIGINS.split(',')
-      .map((origin) => origin.trim())
-      .filter((origin) => origin.length > 0),
+    allowedOrigins,
     systemOwnerKey: parsed.SYSTEM_OWNER_KEY,
     systemAdminEmails,
   };
