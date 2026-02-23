@@ -17,7 +17,7 @@
     "dev:worker": "npm run dev --workspace @pharos/worker",
     "build:web": "npm run build --workspace @pharos/web",
     "start:web": "npm run start --workspace @pharos/web",
-    "build:api": "npm run build:shared && npm run build --workspace @pharos/api",
+    "build:api": "npm run build:shared && npm run build --workspace @pharos/db && npm run build --workspace @pharos/api",
     "start:api": "npm run start --workspace @pharos/api",
     "build:worker": "npm run build:shared && npm run build --workspace @pharos/db && npm run build --workspace @pharos/worker",
     "start:worker": "npm run start --workspace @pharos/worker",
