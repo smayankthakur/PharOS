@@ -4,8 +4,10 @@ WORKDIR /app
 COPY package*.json ./
 COPY apps/worker/package*.json apps/worker/
 COPY packages/config/package*.json packages/config/
+COPY packages/db/package*.json packages/db/
+COPY packages/types/package*.json packages/types/
 
-RUN npm ci
+RUN npm ci --include=dev
 
 FROM deps AS build
 WORKDIR /app
