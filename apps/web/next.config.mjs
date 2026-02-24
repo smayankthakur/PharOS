@@ -1,29 +1,19 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { getConfiguredApiUrl, validateApiUrl } from './scripts/check-env.mjs';
 
 /** @type {import('next').NextConfig} */
 const isDev = process.env.NODE_ENV !== 'production';
 const workspaceRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../');
 
-const parseOrigin = (value) => {
-  if (!value || typeof value !== 'string') {
-    return null;
-  }
+let configuredApiOrigin = null;
+if (!isDev) {
   try {
-    return new URL(value).origin;
-  } catch {
-    return null;
+    configuredApiOrigin = new URL(validateApiUrl(getConfiguredApiUrl())).origin;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`${message} (validated from NEXT_PUBLIC_API_URL/API_URL in apps/web/next.config.mjs)`);
   }
-};
-
-const configuredApiOrigin = parseOrigin(
-  process.env.NEXT_PUBLIC_API_URL ?? process.env.API_URL ?? '',
-);
-
-if (!isDev && !configuredApiOrigin) {
-  throw new Error(
-    'NEXT_PUBLIC_API_URL (or API_URL) must be a valid absolute URL in production.',
-  );
 }
 
 const nextConfig = {
