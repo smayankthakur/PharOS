@@ -138,9 +138,9 @@ Migrations:
 5. Service settings:
    - `Root Directory: .`
 6. Commands:
-   - API build: `npm ci && npm run build:shared && npm run build -w @pharos/api`
+   - API build: `npm ci --include=dev && npm run build:shared && npm run build -w @pharos/api`
    - API start: `npm run start -w @pharos/api`
-   - Worker build: `npm ci && npm run build:shared && npm run build -w @pharos/worker`
+   - Worker build: `npm ci --include=dev && npm run build:shared && npm run build -w @pharos/worker`
    - Worker start: `npm run start -w @pharos/worker`
 7. Required env (minimum):
    - `NODE_ENV=production`
