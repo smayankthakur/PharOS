@@ -86,6 +86,7 @@ Browser
 6. Add env vars:
    - Required for **production**: `NEXT_PUBLIC_API_URL=https://<railway-api>`
    - Recommended for preview: `NEXT_PUBLIC_API_URL=https://<preview-or-staging-api>`
+   - Behavior: builds are strict only when `VERCEL_ENV=production`; preview/development fall back to `http://localhost:4000` with a warning.
    - Optional server-side mirror: `API_URL=https://api.example.com`
    - `TENANT_HOST_SUFFIX=app.example.com`
    - `NEXT_PUBLIC_TENANT_HOST_SUFFIX=app.example.com`
