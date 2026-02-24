@@ -84,8 +84,9 @@ Browser
 4. Build command: `npm run build`.
 5. Install command: `npm ci`.
 6. Add env vars:
-   - `API_URL=https://api.example.com`
-   - `NEXT_PUBLIC_API_URL=https://api.example.com`
+   - Required for **production**: `NEXT_PUBLIC_API_URL=https://<railway-api>`
+   - Recommended for preview: `NEXT_PUBLIC_API_URL=https://<preview-or-staging-api>`
+   - Optional server-side mirror: `API_URL=https://api.example.com`
    - `TENANT_HOST_SUFFIX=app.example.com`
    - `NEXT_PUBLIC_TENANT_HOST_SUFFIX=app.example.com`
    - Optional (lockfile compatibility fallback): `NEXT_IGNORE_INCORRECT_LOCKFILE=1`
