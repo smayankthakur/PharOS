@@ -82,7 +82,7 @@ Browser
 2. Set `Root Directory` to `apps/web`.
 3. Set `Node.js Version` to `20.x`.
 4. Build command: `npm run build`.
-5. Install command: `npm install`.
+5. Install command: `npm install --include=dev`.
    - If you keep a workspace-local lockfile, commit `apps/web/package-lock.json` so Vercel installs identical dependencies.
 6. Add env vars:
    - Required for **production**: `NEXT_PUBLIC_API_URL=https://<railway-api>`
@@ -135,14 +135,23 @@ Migrations:
    - Optional `web` (or keep web on Vercel)
 3. Add Postgres plugin.
 4. Add Redis plugin (recommended).
-5. Commands:
-   - API build: `npm ci --include=dev && npm run build:api`
+5. Service settings:
+   - `Root Directory: .`
+6. Commands:
+   - API build: `npm ci && npm run build:shared && npm run build -w @pharos/api`
    - API start: `npm run start -w @pharos/api`
-   - Worker build: `npm ci && npm run build:worker`
-   - Worker start: `npm run start:worker`
-6. Run migrations once per release:
+   - Worker build: `npm ci && npm run build:shared && npm run build -w @pharos/worker`
+   - Worker start: `npm run start -w @pharos/worker`
+7. Required env (minimum):
+   - `NODE_ENV=production`
+   - `DATABASE_URL=<valid postgres url>`
+   - `JWT_SECRET=<must be >= 32 chars>`
+   - `SYSTEM_OWNER_KEY=<must be >= 32 chars>`
+   - `ALLOWED_ORIGINS=https://pharos.sitelytc.com`
+   - `REDIS_URL=<optional but recommended>`
+8. Run migrations once per release:
    - `npm ci && npm run migrate:deploy`
-7. Map domain:
+9. Map domain:
    - API -> `api.example.com`
    - Optional web -> `app.example.com` + wildcard
 
