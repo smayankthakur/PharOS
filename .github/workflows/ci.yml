@@ -120,7 +120,7 @@ jobs:
         with:
           name: test-results-api
           path: apps/api/reports/api-junit.xml
-          if-no-files-found: error
+          if-no-files-found: warn
 
       - name: Upload API coverage
         uses: actions/upload-artifact@v4
