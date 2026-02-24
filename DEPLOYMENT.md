@@ -83,6 +83,7 @@ Browser
 3. Set `Node.js Version` to `20.x`.
 4. Build command: `npm run build`.
 5. Install command: `npm ci`.
+   - If you keep a workspace-local lockfile, commit `apps/web/package-lock.json` so Vercel installs identical dependencies.
 6. Add env vars:
    - Required for **production**: `NEXT_PUBLIC_API_URL=https://<railway-api>`
    - Recommended for preview: `NEXT_PUBLIC_API_URL=https://<preview-or-staging-api>`
